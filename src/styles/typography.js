@@ -4,7 +4,7 @@ export const fonts = {
   regular: 'GoogleSansFlex-Regular',
   medium: 'GoogleSansFlex-Medium',
   semiBold: 'GoogleSansFlex-SemiBold',
-  bold: 'GoogleSansFlex-Boldx',
+  bold: 'GoogleSansFlex-Bold',
 };
 
 export const typography = {
