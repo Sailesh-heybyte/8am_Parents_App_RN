@@ -1,7 +1,8 @@
 import React from 'react';
-import { StatusBar, StyleSheet, Text } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography } from './styles';
+import { colors } from './styles';
+import AppText from './components/AppText';
 
 // Temporary first screen (replaced by the real Splash/Login soon)
 export default function App() {
@@ -9,7 +10,8 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <SafeAreaView style={styles.screen}>
-        <Text style={styles.title}>8AM Parents 🚌</Text>
+        <AppText variant="greeting" color={colors.primaryNavy}>8AM Parents 🚌</AppText>
+        <AppText variant="bodySecondary">Track your child's school bus</AppText>
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -21,9 +23,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.background,
-  },
-  title: {
-    ...typography.greeting,
-    color: colors.primaryNavy,
   },
 });
