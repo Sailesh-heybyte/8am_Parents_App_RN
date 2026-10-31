@@ -1,7 +1,7 @@
 import React from 'react';
 import { StatusBar, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from './styles';
+import { colors, typography } from './styles';
 
 // Temporary first screen (replaced by the real Splash/Login soon)
 export default function App() {
@@ -23,8 +23,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
+    ...typography.greeting,
     color: colors.primaryNavy,
   },
 });
