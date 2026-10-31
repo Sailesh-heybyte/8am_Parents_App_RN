@@ -5,6 +5,7 @@ import { colors, spacing } from './styles';
 import AppText from './components/AppText';
 import AppButton from './components/AppButton';
 import AppTextInput from './components/AppTextInput';
+import Card from './components/Card';
 
 // Temporary first screen (replaced by the real Splash/Login soon)
 export default function App() {
@@ -25,7 +26,7 @@ export default function App() {
         <View style={styles.buttonBox}>
           <AppTextInput
             icon="phone-android"
-            placeholder="Mobile number"
+            label="Mobile Number"
             keyboardType="number-pad"
             autoComplete="tel"
             maxLength={10}
@@ -34,6 +35,10 @@ export default function App() {
             style={styles.input}
           />
           <AppButton title="Send OTP" loading={loading} onPress={handlePress} />
+          <Card onPress={() => {}} style={styles.card}>
+            <AppText variant="heading3">Announcements</AppText>
+            <AppText variant="bodySmall">Notices & circulars</AppText>
+          </Card>
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -54,5 +59,8 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
+  },
+  card: {
+    marginTop: 16,
   },
 });
