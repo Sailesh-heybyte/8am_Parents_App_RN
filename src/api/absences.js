@@ -15,3 +15,10 @@ export async function getAbsences(studentId) {
   return Array.isArray(data) ? data.map(toAbsence) : [];
 }
 
+export async function markAbsent(studentId, { date, direction, reason }) {
+  await client.post(`/api/v1/people/students/${studentId}/absent`, {
+    absence_date: date,
+    direction,
+    ...(reason ? { reason } : {}),
+  });
+}

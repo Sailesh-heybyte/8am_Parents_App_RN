@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { clearTokens, getTokens, saveTokens } from '../utils/tokenStorage';
+import { clearParentName } from '../utils/storage';
 import { setOnSessionExpired } from '../api/client';
 
 const AuthContext = createContext(null);
@@ -26,6 +27,7 @@ export function AuthProvider({ children }) {
 
   async function signOut() {
     await clearTokens();
+    await clearParentName();
     setIsLoggedIn(false);
   }
 

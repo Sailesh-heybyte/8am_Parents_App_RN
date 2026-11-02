@@ -1,15 +1,17 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, View, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, RefreshControl, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from '../../components/AppText';
 import StatusBadge from '../../components/StatusBadge';
 import { useAuth } from '../../context/AuthContext';
 import { getMe } from '../../api/auth';
 import { getChildren } from '../../api/children';
+import { getParentName, saveParentName } from '../../utils/storage';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
 import ChildCard from './ChildCard';
 import HomeHeader from './HomeHeader';
+import HomeTopBar from './HomeTopBar';
 import ActionCard from './ActionCard';
 import styles from './Home.styles';
 
@@ -26,6 +28,7 @@ export default function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const padding = { paddingHorizontal: width < 380 ? 16 : 20 };
 
@@ -39,8 +42,16 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
+    getParentName().then(saved => {
+      if (saved) {
+        setName(current => current || saved);
+      }
+    });
     getMe()
-      .then(me => setName(me.fullName))
+      .then(me => {
+        setName(me.fullName);
+        saveParentName(me.fullName);
+      })
       .catch(() => {});
     loadChildren().finally(() => setLoading(false));
   }, [loadChildren]);
@@ -70,7 +81,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.screen}>
-      <FlatList
+      <Animated.FlatList
         data={error ? [] : children}
         keyExtractor={item => item.id}
         renderItem={({ item, index }) => (
@@ -85,22 +96,21 @@ export default function HomeScreen({ navigation }) {
         ItemSeparatorComponent={Separator}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={{ paddingBottom: 36 + insets.bottom }}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: true,
+        })}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
             colors={[colors.primaryNavy]}
-            progressViewOffset={insets.top}
+            progressViewOffset={insets.top + 60}
           />
         }
         ListHeaderComponent={
           <View>
-            <HomeHeader
-              name={name}
-              onBellPress={() => {}}
-              onLogout={signOut}
-              horizontalPadding={padding.paddingHorizontal}
-            />
+            <HomeHeader name={name} horizontalPadding={padding.paddingHorizontal} />
             {children.length > 0 && (
               <View style={[styles.actionsRow, padding]}>
                 <ActionCard
@@ -129,6 +139,12 @@ export default function HomeScreen({ navigation }) {
             </View>
           </View>
         }
+      />
+      <HomeTopBar
+        scrollY={scrollY}
+        onBellPress={() => {}}
+        onLogout={signOut}
+        horizontalPadding={padding.paddingHorizontal}
       />
     </View>
   );

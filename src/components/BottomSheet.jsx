@@ -59,13 +59,13 @@ export default function BottomSheet({ visible, onClose, children }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.54)',
   },
+  backdrop: {
+    flex: 1,
+  },
   sheet: {
+    flexShrink: 1,
     paddingTop: 16,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,

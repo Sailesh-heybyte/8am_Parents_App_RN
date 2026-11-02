@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
@@ -18,11 +18,12 @@ import Card from '../../components/Card';
 import IconTile from '../../components/IconTile';
 import StatusBadge from '../../components/StatusBadge';
 import FeatureCard from './FeatureCard';
-import { getAbsences } from '../../api/absences';
+import { getAbsences, markAbsent } from '../../api/absences';
 import { getErrorMessage } from '../../utils/errors';
 import { useSnackbar } from '../../context/SnackbarContext';
 import AbsenceCard from './AbsenceCard';
 import NoAbsencesCard from './NoAbsencesCard';
+import MarkAbsentForm from './MarkAbsentForm';
 import { colors } from '../../styles';
 import styles from './ChildDetails.styles';
 
@@ -36,13 +37,40 @@ export default function ChildDetailsScreen({ navigation, route }) {
   const [absences, setAbsences] = useState([]);
   const [absencesLoading, setAbsencesLoading] = useState(true);
   const [absentSheetOpen, setAbsentSheetOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  const loadAbsences = useCallback(async () => {
+    try {
+      setAbsences(await getAbsences(child.id));
+    } catch (e) {
+      showSnackbar(getErrorMessage(e, 'Failed to load absences.'), 'error');
+    }
+  }, [child.id, showSnackbar]);
 
   useEffect(() => {
-    getAbsences(child.id)
-      .then(setAbsences)
-      .catch(e => showSnackbar(getErrorMessage(e, 'Failed to load absences.'), 'error'))
-      .finally(() => setAbsencesLoading(false));
-  }, [child.id, showSnackbar]);
+    loadAbsences().finally(() => setAbsencesLoading(false));
+  }, [loadAbsences]);
+
+  function openAbsentSheet() {
+    setSaveError('');
+    setAbsentSheetOpen(true);
+  }
+
+  async function handleMarkAbsent(values) {
+    setSaving(true);
+    setSaveError('');
+    try {
+      await markAbsent(child.id, values);
+      await loadAbsences();
+      setAbsentSheetOpen(false);
+      showSnackbar('Absence recorded successfully.', 'success');
+    } catch (e) {
+      setSaveError(getErrorMessage(e, "Couldn't update the absence. Please try again."));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
@@ -145,7 +173,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
             Icon={CalendarXIcon}
             iconBg={colors.warningOrangeBg}
             iconColor={colors.warningOrange}
-            onPress={() => setAbsentSheetOpen(true)}
+            onPress={openAbsentSheet}
           />
           <FeatureCard
             title="Trip History"
@@ -169,7 +197,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
           <AppText variant="heading2" style={styles.absencesTitle}>
             Planned Absences
           </AppText>
-          <Pressable onPress={() => setAbsentSheetOpen(true)} hitSlop={6} accessibilityRole="button" style={styles.markLink}>
+          <Pressable onPress={openAbsentSheet} hitSlop={6} accessibilityRole="button" style={styles.markLink}>
             <MaterialIcons name="add" size={16} color={colors.primaryNavy} />
             <AppText variant="bodySmall" style={styles.markLinkText}>
               Mark Absent
@@ -180,7 +208,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
         {absencesLoading ? (
           <ActivityIndicator color={colors.primaryNavy} style={styles.absencesLoader} />
         ) : absences.length === 0 ? (
-          <NoAbsencesCard childName={child.name} onMarkPress={() => setAbsentSheetOpen(true)} />
+          <NoAbsencesCard childName={child.name} onMarkPress={openAbsentSheet} />
         ) : (
           <View style={styles.stack}>
             {absences.map(absence => (
@@ -191,8 +219,13 @@ export default function ChildDetailsScreen({ navigation, route }) {
       </ScrollView>
 
       <BottomSheet visible={absentSheetOpen} onClose={() => setAbsentSheetOpen(false)}>
-        <AppText variant="heading1">Mark Absent</AppText>
-        <AppText variant="bodySecondary">{child.name}</AppText>
+        <MarkAbsentForm
+          child={child}
+          onClose={() => setAbsentSheetOpen(false)}
+          onSubmit={handleMarkAbsent}
+          loading={saving}
+          error={saveError}
+        />
       </BottomSheet>
     </SafeAreaView>
   );
