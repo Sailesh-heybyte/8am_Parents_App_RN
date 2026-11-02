@@ -3,6 +3,7 @@ import { StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
 import { BusIcon } from 'phosphor-react-native';
+import { MegaphoneIcon } from 'phosphor-react-native';
 import { colors, spacing } from './styles';
 import AppText from './components/AppText';
 import AppButton from './components/AppButton';
@@ -11,6 +12,7 @@ import Card from './components/Card';
 import IconTile from './components/IconTile';
 import StatusBadge from './components/StatusBadge';
 import ScreenHeader from './components/ScreenHeader';
+import EmptyState from './components/EmptyState';
 
 // Temporary first screen (replaced by the real Splash/Login soon)
 export default function App() {
@@ -62,6 +64,13 @@ export default function App() {
               <StatusBadge label="Roll No: RJY-101" tone="neutral" />
             </View>
           </Card>
+          <EmptyState
+            icon={<MegaphoneIcon size={40} color={colors.pink} />}
+            iconBg={colors.pinkBg}
+            message="No announcements yet."
+            actionTitle="Try Again"
+            onAction={() => {}}
+          />
         </View>
       </SafeAreaView>
     </SafeAreaProvider>

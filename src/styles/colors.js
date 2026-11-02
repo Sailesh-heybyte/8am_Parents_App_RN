@@ -31,8 +31,9 @@ export const colors = {
 
   errorRed: '#D32F2F',
   errorRedBg: '#FFEBEE',
+  pink: '#E91E63',
+  pinkBg: '#FCE4EC',
 
   neutralBadgeBg: '#F2EFE9',
   neutralBadgeText: '#4A4643',
 };
-
