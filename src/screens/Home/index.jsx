@@ -17,7 +17,7 @@ function Separator() {
   return <View style={styles.separator} />;
 }
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
   const { signOut } = useAuth();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -75,7 +75,11 @@ export default function HomeScreen() {
         keyExtractor={item => item.id}
         renderItem={({ item, index }) => (
           <View style={padding}>
-            <ChildCard child={item} index={index} onPress={() => {}} />
+            <ChildCard
+              child={item}
+              index={index}
+              onPress={() => navigation.navigate('ChildDetails', { child: item })}
+            />
           </View>
         )}
         ItemSeparatorComponent={Separator}
