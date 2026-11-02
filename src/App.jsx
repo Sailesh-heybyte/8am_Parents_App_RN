@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
-import { BusIcon } from 'phosphor-react-native';
-import { MegaphoneIcon } from 'phosphor-react-native';
+import { BusIcon, MegaphoneIcon } from 'phosphor-react-native';
 import { colors, spacing } from './styles';
 import AppText from './components/AppText';
 import AppButton from './components/AppButton';
@@ -28,50 +27,55 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <SafeAreaView style={styles.screen}>
-        <AppText variant="greeting" color={colors.primaryNavy}>8AM Parents 🚌</AppText>
-        <AppText variant="bodySecondary">Track your child's school bus</AppText>
-        <View style={styles.buttonBox}>
-          <ScreenHeader
-            title="Announcements"
-            subtitle="Official route notices and circulars from administration"
-            onBack={() => {}}
-          />
-          <AppTextInput
-            icon="phone-android"
-            label="Mobile Number"
-            keyboardType="number-pad"
-            autoComplete="tel"
-            maxLength={10}
-            value={phone}
-            onChangeText={text => setPhone(text.replace(/[^0-9]/g, ''))}
-            style={styles.input}
-          />
-          <AppButton title="Send OTP" loading={loading} onPress={handlePress} />
-          <Card onPress={() => {}} style={styles.card}>
-            <View style={styles.tileRow}>
-              <IconTile bg={colors.infoBlueBg}>
-                <MaterialIcons name="notifications-none" size={20} color={colors.infoBlue} />
-              </IconTile>
-              <IconTile bg={colors.busYellowLight}>
-                <BusIcon size={20} color={colors.busYellowText} weight="bold" />
-              </IconTile>
-            </View>
-            <AppText variant="heading3">Announcements</AppText>
-            <AppText variant="bodySmall">Notices & circulars</AppText>
-            <View style={styles.badgeList}>
-              <StatusBadge label="Bus Service Active" tone="success" />
-              <StatusBadge label="Did not board" tone="error" />
-              <StatusBadge label="Roll No: RJY-101" tone="neutral" />
-            </View>
-          </Card>
-          <EmptyState
-            icon={<MegaphoneIcon size={40} color={colors.pink} />}
-            iconBg={colors.pinkBg}
-            message="No announcements yet."
-            actionTitle="Try Again"
-            onAction={() => {}}
-          />
-        </View>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <AppText variant="greeting" color={colors.primaryNavy}>8AM Parents 🚌</AppText>
+          <AppText variant="bodySecondary">Track your child's school bus</AppText>
+          <View style={styles.buttonBox}>
+            <ScreenHeader
+              title="Announcements"
+              subtitle="Official route notices and circulars from administration"
+              onBack={() => {}}
+            />
+            <AppTextInput
+              icon="phone-android"
+              label="Mobile Number"
+              keyboardType="number-pad"
+              autoComplete="tel"
+              maxLength={10}
+              value={phone}
+              onChangeText={text => setPhone(text.replace(/[^0-9]/g, ''))}
+              style={styles.input}
+            />
+            <AppButton title="Send OTP" loading={loading} onPress={handlePress} />
+            <Card onPress={() => {}} style={styles.card}>
+              <View style={styles.tileRow}>
+                <IconTile bg={colors.infoBlueBg}>
+                  <MaterialIcons name="notifications-none" size={20} color={colors.infoBlue} />
+                </IconTile>
+                <IconTile bg={colors.busYellowLight}>
+                  <BusIcon size={20} color={colors.busYellowText} weight="bold" />
+                </IconTile>
+              </View>
+              <AppText variant="heading3">Announcements</AppText>
+              <AppText variant="bodySmall">Notices & circulars</AppText>
+              <View style={styles.badgeList}>
+                <StatusBadge label="Bus Service Active" tone="success" />
+                <StatusBadge label="Did not board" tone="error" />
+                <StatusBadge label="Roll No: RJY-101" tone="neutral" />
+              </View>
+            </Card>
+            <EmptyState
+              icon={<MegaphoneIcon size={40} color={colors.pink} />}
+              iconBg={colors.pinkBg}
+              message="No announcements yet."
+              actionTitle="Try Again"
+              onAction={() => {}}
+            />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -80,9 +84,11 @@ export default function App() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: colors.background,
+  },
+  content: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxl,
   },
   buttonBox: {
     width: '100%',
