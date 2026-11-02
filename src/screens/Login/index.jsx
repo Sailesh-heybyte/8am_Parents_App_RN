@@ -9,6 +9,7 @@ import Card from '../../components/Card';
 import { requestOtp, verifyOtp } from '../../api/auth';
 import { getErrorMessage } from '../../utils/errors';
 import { useAuth } from '../../context/AuthContext';
+import { useSnackbar } from '../../context/SnackbarContext';
 import { colors } from '../../styles';
 import styles from './Login.styles';
 
@@ -17,32 +18,25 @@ const DEV_OTP = __DEV__ ? '123456' : '';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
+  const showSnackbar = useSnackbar();
   const { width } = useWindowDimensions();
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState(DEV_OTP);
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isError, setIsError] = useState(false);
-
-  function showMessage(text, error = false) {
-    setMessage(text);
-    setIsError(error);
-  }
 
   async function handleSendOtp() {
     if (phone.length !== 10) {
-      showMessage('Enter a valid 10-digit mobile number', true);
+      showSnackbar('Enter a valid 10-digit mobile number', 'error');
       return;
     }
     setLoading(true);
-    showMessage('');
     try {
       await requestOtp(phone);
       setOtpSent(true);
-      showMessage('OTP sent to your number');
+      showSnackbar('OTP sent to your number');
     } catch (error) {
-      showMessage(getErrorMessage(error, 'Failed to send OTP. Please check the number.'), true);
+      showSnackbar(getErrorMessage(error, 'Failed to send OTP. Please check the number.'), 'error');
     } finally {
       setLoading(false);
     }
@@ -50,17 +44,16 @@ export default function LoginScreen() {
 
   async function handleVerifyOtp() {
     if (otp.length !== 6) {
-      showMessage('Enter the 6-digit OTP', true);
+      showSnackbar('Enter the 6-digit OTP', 'error');
       return;
     }
     setLoading(true);
-    showMessage('');
     try {
       const tokens = await verifyOtp(phone, otp);
       await signIn(tokens);
-      showMessage('Login successful');
+      showSnackbar('Login successful', 'success');
     } catch (error) {
-      showMessage(getErrorMessage(error, 'Invalid OTP or Number'), true);
+      showSnackbar(getErrorMessage(error, 'Invalid OTP or Number'), 'error');
     } finally {
       setLoading(false);
     }
@@ -69,7 +62,6 @@ export default function LoginScreen() {
   function handleChangeNumber() {
     setOtpSent(false);
     setOtp(DEV_OTP);
-    showMessage('');
   }
 
   function handleResend() {
@@ -150,16 +142,6 @@ export default function LoginScreen() {
                 Resend OTP
               </AppText>
             </View>
-          )}
-
-          {message !== '' && (
-            <AppText
-              variant="bodySmall"
-              color={isError ? colors.errorRed : colors.liveGreen}
-              style={styles.message}
-            >
-              {message}
-            </AppText>
           )}
         </Card>
 

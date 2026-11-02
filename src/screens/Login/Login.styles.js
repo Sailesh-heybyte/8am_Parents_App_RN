@@ -61,10 +61,6 @@ export default StyleSheet.create({
     fontFamily: fonts.semiBold,
     color: colors.primaryNavy,
   },
-  message: {
-    marginTop: 12,
-    textAlign: 'center',
-  },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -83,4 +79,3 @@ export default StyleSheet.create({
     lineHeight: 16,
   },
 });
-
