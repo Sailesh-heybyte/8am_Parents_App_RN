@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
+import { BusIcon } from 'phosphor-react-native';
 import { colors, spacing } from './styles';
 import AppText from './components/AppText';
 import AppButton from './components/AppButton';
 import AppTextInput from './components/AppTextInput';
 import Card from './components/Card';
+import IconTile from './components/IconTile';
+import StatusBadge from './components/StatusBadge';
+import ScreenHeader from './components/ScreenHeader';
 
 // Temporary first screen (replaced by the real Splash/Login soon)
 export default function App() {
@@ -24,6 +29,11 @@ export default function App() {
         <AppText variant="greeting" color={colors.primaryNavy}>8AM Parents 🚌</AppText>
         <AppText variant="bodySecondary">Track your child's school bus</AppText>
         <View style={styles.buttonBox}>
+          <ScreenHeader
+            title="Announcements"
+            subtitle="Official route notices and circulars from administration"
+            onBack={() => {}}
+          />
           <AppTextInput
             icon="phone-android"
             label="Mobile Number"
@@ -36,8 +46,21 @@ export default function App() {
           />
           <AppButton title="Send OTP" loading={loading} onPress={handlePress} />
           <Card onPress={() => {}} style={styles.card}>
+            <View style={styles.tileRow}>
+              <IconTile bg={colors.infoBlueBg}>
+                <MaterialIcons name="notifications-none" size={20} color={colors.infoBlue} />
+              </IconTile>
+              <IconTile bg={colors.busYellowLight}>
+                <BusIcon size={20} color={colors.busYellowText} weight="bold" />
+              </IconTile>
+            </View>
             <AppText variant="heading3">Announcements</AppText>
             <AppText variant="bodySmall">Notices & circulars</AppText>
+            <View style={styles.badgeList}>
+              <StatusBadge label="Bus Service Active" tone="success" />
+              <StatusBadge label="Did not board" tone="error" />
+              <StatusBadge label="Roll No: RJY-101" tone="neutral" />
+            </View>
           </Card>
         </View>
       </SafeAreaView>
@@ -62,5 +85,14 @@ const styles = StyleSheet.create({
   },
   card: {
     marginTop: 16,
+  },
+  tileRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  badgeList: {
+    gap: 6,
+    marginTop: 10,
   },
 });
