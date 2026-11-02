@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from '../../components/AppText';
 import StatusBadge from '../../components/StatusBadge';
 import { useAuth } from '../../context/AuthContext';
@@ -9,6 +9,8 @@ import { getChildren } from '../../api/children';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
 import ChildCard from './ChildCard';
+import HomeHeader from './HomeHeader';
+import ActionCard from './ActionCard';
 import styles from './Home.styles';
 
 function Separator() {
@@ -17,12 +19,15 @@ function Separator() {
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [name, setName] = useState('');
   const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+
+  const padding = { paddingHorizontal: width < 380 ? 16 : 20 };
 
   const loadChildren = useCallback(async () => {
     try {
@@ -50,47 +55,69 @@ export default function HomeScreen() {
     if (loading) {
       return <ActivityIndicator color={colors.primaryNavy} style={styles.loader} />;
     }
-    if (error) {
-      return (
-        <AppText color={colors.errorRed} style={styles.stateText}>
-          {error}
-        </AppText>
-      );
-    }
     return (
-      <AppText variant="bodySecondary" style={styles.stateText}>
-        No children linked to this account.
-      </AppText>
+      <View style={padding}>
+        <AppText
+          variant={error ? 'body' : 'bodySecondary'}
+          color={error ? colors.errorRed : undefined}
+          style={styles.stateText}
+        >
+          {error || 'No children linked to this account.'}
+        </AppText>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <View style={styles.screen}>
       <FlatList
         data={error ? [] : children}
         keyExtractor={item => item.id}
         renderItem={({ item, index }) => (
-          <ChildCard child={item} index={index} onPress={() => {}} />
+          <View style={padding}>
+            <ChildCard child={item} index={index} onPress={() => {}} />
+          </View>
         )}
         ItemSeparatorComponent={Separator}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={[styles.content, { paddingHorizontal: width < 380 ? 16 : 20 }]}
+        contentContainerStyle={{ paddingBottom: 36 + insets.bottom }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
             colors={[colors.primaryNavy]}
+            progressViewOffset={insets.top}
           />
         }
         ListHeaderComponent={
           <View>
-            <View style={styles.topRow}>
-              <AppText variant="bodySecondary">{name ? `Hello, ${name}` : ' '}</AppText>
-              <AppText variant="bodySmall" style={styles.logout} onPress={signOut}>
-                Logout
-              </AppText>
-            </View>
-            <View style={styles.sectionRow}>
+            <HomeHeader
+              name={name}
+              onBellPress={() => {}}
+              onLogout={signOut}
+              horizontalPadding={padding.paddingHorizontal}
+            />
+            {children.length > 0 && (
+              <View style={[styles.actionsRow, padding]}>
+                <ActionCard
+                  title="Announcements"
+                  subtitle="Notices & circulars"
+                  icon="notifications-none"
+                  iconBg={colors.infoBlueBg}
+                  iconColor={colors.infoBlue}
+                  onPress={() => {}}
+                />
+                <ActionCard
+                  title="Mark Absent"
+                  subtitle="Notify school & bus"
+                  icon="event-busy"
+                  iconBg={colors.busYellowLight}
+                  iconColor={colors.busYellowText}
+                  onPress={() => {}}
+                />
+              </View>
+            )}
+            <View style={[styles.sectionRow, padding]}>
               <AppText variant="heading2" style={styles.sectionTitle}>
                 My Children
               </AppText>
@@ -99,6 +126,6 @@ export default function HomeScreen() {
           </View>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 }

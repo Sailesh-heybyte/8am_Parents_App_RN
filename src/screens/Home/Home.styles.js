@@ -6,19 +6,11 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
-    paddingTop: 16,
-    paddingBottom: 36,
-  },
-  topRow: {
+  actionsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logout: {
-    fontFamily: fonts.semiBold,
-    color: colors.primaryNavy,
+    gap: 12,
+    paddingTop: 10,
+    paddingBottom: 16,
   },
   sectionRow: {
     flexDirection: 'row',
@@ -44,4 +36,3 @@ export default StyleSheet.create({
     marginVertical: 20,
   },
 });
-
