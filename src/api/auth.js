@@ -19,3 +19,12 @@ export async function verifyOtp(phone, code) {
     tokenType: data.token_type,
   };
 }
+
+export async function getMe() {
+  const { data } = await client.get('/api/v1/people/me');
+  return {
+    userId: data.user_id,
+    fullName: data.full_name || 'Parent',
+    schoolName: data.school_name || 'School',
+  };
+}

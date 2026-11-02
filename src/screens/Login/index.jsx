@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Image, ScrollView, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
@@ -8,7 +8,7 @@ import AppTextInput from '../../components/AppTextInput';
 import Card from '../../components/Card';
 import { requestOtp, verifyOtp } from '../../api/auth';
 import { getErrorMessage } from '../../utils/errors';
-import { getTokens, saveTokens } from '../../utils/tokenStorage';
+import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../styles';
 import styles from './Login.styles';
 
@@ -16,6 +16,7 @@ const logo = require('../../assets/images/logo.png');
 const DEV_OTP = __DEV__ ? '123456' : '';
 
 export default function LoginScreen() {
+  const { signIn } = useAuth();
   const { width } = useWindowDimensions();
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState(DEV_OTP);
@@ -23,14 +24,6 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
-
-  useEffect(() => {
-    getTokens().then(tokens => {
-      if (tokens) {
-        showMessage('You are already logged in');
-      }
-    });
-  }, []);
 
   function showMessage(text, error = false) {
     setMessage(text);
@@ -64,7 +57,7 @@ export default function LoginScreen() {
     showMessage('');
     try {
       const tokens = await verifyOtp(phone, otp);
-      await saveTokens(tokens);
+      await signIn(tokens);
       showMessage('Login successful');
     } catch (error) {
       showMessage(getErrorMessage(error, 'Invalid OTP or Number'), true);
