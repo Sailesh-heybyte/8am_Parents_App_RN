@@ -37,3 +37,12 @@ export function addDays(date, days) {
 export function isSameDay(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
+
+export function formatClock(isoString) {
+  if (!isoString) return null;
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return null;
+  const hours = date.getHours() % 12 || 12;
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes} ${date.getHours() < 12 ? 'AM' : 'PM'}`;
+}

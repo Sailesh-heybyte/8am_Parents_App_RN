@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
-import AppText from '../../components/AppText';
-import Card from '../../components/Card';
 import ChildPill from '../../components/ChildPill';
+import MessageCard from '../../components/MessageCard';
 import ScreenHeader from '../../components/ScreenHeader';
 import { getTripHistory } from '../../api/trips';
 import { getErrorMessage } from '../../utils/errors';
@@ -14,17 +12,6 @@ import styles from './TripHistory.styles';
 
 function Separator() {
   return <View style={styles.separator} />;
-}
-
-function MessageCard({ icon, text }) {
-  return (
-    <Card style={styles.messageCard}>
-      <MaterialIcons name={icon} size={24} color={colors.textSecondary} />
-      <AppText variant="bodySmall" style={styles.messageText}>
-        {text}
-      </AppText>
-    </Card>
-  );
 }
 
 export default function TripHistoryScreen({ navigation, route }) {
@@ -71,7 +58,12 @@ export default function TripHistoryScreen({ navigation, route }) {
         <FlatList
           data={error ? [] : trips}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <TripCard trip={item} onPress={() => {}} />}
+          renderItem={({ item }) => (
+            <TripCard
+              trip={item}
+              onPress={() => navigation.navigate('TripDetail', { child, tripId: item.id })}
+            />
+          )}
           ItemSeparatorComponent={Separator}
           ListEmptyComponent={
             <MessageCard
@@ -88,4 +80,3 @@ export default function TripHistoryScreen({ navigation, route }) {
     </SafeAreaView>
   );
 }
-
