@@ -112,5 +112,28 @@ export default StyleSheet.create({
   stack: {
     gap: 10,
   },
+  absencesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 28,
+    marginBottom: 10,
+  },
+  absencesTitle: {
+    fontFamily: fonts.bold,
+  },
+  markLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  markLinkText: {
+    fontFamily: fonts.semiBold,
+    color: colors.primaryNavy,
+  },
+  absencesLoader: {
+    marginVertical: 24,
+  },
 });
-

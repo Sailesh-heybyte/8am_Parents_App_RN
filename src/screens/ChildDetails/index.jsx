@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
 import {
@@ -13,10 +13,16 @@ import {
 } from 'phosphor-react-native';
 import AppText from '../../components/AppText';
 import BackButton from '../../components/BackButton';
+import BottomSheet from '../../components/BottomSheet';
 import Card from '../../components/Card';
 import IconTile from '../../components/IconTile';
 import StatusBadge from '../../components/StatusBadge';
 import FeatureCard from './FeatureCard';
+import { getAbsences } from '../../api/absences';
+import { getErrorMessage } from '../../utils/errors';
+import { useSnackbar } from '../../context/SnackbarContext';
+import AbsenceCard from './AbsenceCard';
+import NoAbsencesCard from './NoAbsencesCard';
 import { colors } from '../../styles';
 import styles from './ChildDetails.styles';
 
@@ -26,6 +32,17 @@ export default function ChildDetailsScreen({ navigation, route }) {
   const stop = child.stopName || child.routeName;
   const initial = child.name ? child.name[0].toUpperCase() : 'S';
   const homeLocationSet = child.homeLatitude != null && child.homeLongitude != null;
+  const showSnackbar = useSnackbar();
+  const [absences, setAbsences] = useState([]);
+  const [absencesLoading, setAbsencesLoading] = useState(true);
+  const [absentSheetOpen, setAbsentSheetOpen] = useState(false);
+
+  useEffect(() => {
+    getAbsences(child.id)
+      .then(setAbsences)
+      .catch(e => showSnackbar(getErrorMessage(e, 'Failed to load absences.'), 'error'))
+      .finally(() => setAbsencesLoading(false));
+  }, [child.id, showSnackbar]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
@@ -128,7 +145,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
             Icon={CalendarXIcon}
             iconBg={colors.warningOrangeBg}
             iconColor={colors.warningOrange}
-            onPress={() => {}}
+            onPress={() => setAbsentSheetOpen(true)}
           />
           <FeatureCard
             title="Trip History"
@@ -147,7 +164,36 @@ export default function ChildDetailsScreen({ navigation, route }) {
             onPress={() => {}}
           />
         </View>
+
+        <View style={styles.absencesHeader}>
+          <AppText variant="heading2" style={styles.absencesTitle}>
+            Planned Absences
+          </AppText>
+          <Pressable onPress={() => setAbsentSheetOpen(true)} hitSlop={6} accessibilityRole="button" style={styles.markLink}>
+            <MaterialIcons name="add" size={16} color={colors.primaryNavy} />
+            <AppText variant="bodySmall" style={styles.markLinkText}>
+              Mark Absent
+            </AppText>
+          </Pressable>
+        </View>
+
+        {absencesLoading ? (
+          <ActivityIndicator color={colors.primaryNavy} style={styles.absencesLoader} />
+        ) : absences.length === 0 ? (
+          <NoAbsencesCard childName={child.name} onMarkPress={() => setAbsentSheetOpen(true)} />
+        ) : (
+          <View style={styles.stack}>
+            {absences.map(absence => (
+              <AbsenceCard key={absence.id} absence={absence} onPress={() => {}} onCancel={() => {}} />
+            ))}
+          </View>
+        )}
       </ScrollView>
+
+      <BottomSheet visible={absentSheetOpen} onClose={() => setAbsentSheetOpen(false)}>
+        <AppText variant="heading1">Mark Absent</AppText>
+        <AppText variant="bodySecondary">{child.name}</AppText>
+      </BottomSheet>
     </SafeAreaView>
   );
 }

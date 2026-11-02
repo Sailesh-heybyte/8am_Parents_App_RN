@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, TextInput, View } from 'react-native';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
+import useTextScale from '../hooks/useTextScale';
 import { colors, fonts, radius } from '../styles';
 
 export default function AppTextInput({
@@ -13,6 +14,7 @@ export default function AppTextInput({
   ...rest
 }) {
   const [focused, setFocused] = useState(false);
+  const scale = useTextScale();
   const active = focused || !!value;
   const anim = useRef(new Animated.Value(active ? 1 : 0)).current;
 
@@ -38,22 +40,23 @@ export default function AppTextInput({
     <View style={[styles.box, focused && styles.focused, !editable && styles.disabled, style]}>
       {icon && <MaterialIcons name={icon} size={20} color={colors.textSecondary} />}
       <TextInput
-        style={styles.input}
+        style={[styles.input, { fontSize: 15 * scale }]}
         value={value}
         editable={editable}
         placeholderTextColor={colors.textSecondary}
         cursorColor={colors.primaryNavy}
         selectionColor={colors.primaryNavyLight}
-        maxFontSizeMultiplier={1.3}
+        allowFontScaling={false}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         {...rest}
       />
       {label && (
         <Animated.Text
-          maxFontSizeMultiplier={1.3}
+          allowFontScaling={false}
           style={[
             styles.label,
+            { fontSize: 13.5 * scale },
             { left: restLeft - 4, backgroundColor: active ? labelBackground : 'transparent' },
             labelMotion,
           ]}
