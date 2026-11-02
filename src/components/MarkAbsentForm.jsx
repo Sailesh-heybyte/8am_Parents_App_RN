@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import AppText from '../../components/AppText';
-import AppButton from '../../components/AppButton';
-import IconTile from '../../components/IconTile';
-import useTextScale from '../../hooks/useTextScale';
-import { addDays, formatDate, isSameDay, toApiDate } from '../../utils/date';
-import { colors, fonts, radius } from '../../styles';
+import AppText from './AppText';
+import AppButton from './AppButton';
+import IconTile from './IconTile';
+import useTextScale from '../hooks/useTextScale';
+import { addDays, formatDate, isAfterToday, isSameDay, parseDate, toApiDate } from '../utils/date';
+import { colors, fonts, radius } from '../styles';
 
 const OPTIONS = [
   { value: 'BOTH', title: 'Full Day', subtitle: 'Pickup & Drop', icon: 'all-inclusive' },
@@ -15,18 +15,30 @@ const OPTIONS = [
   { value: 'PM_DROP', title: 'Evening', subtitle: 'PM Drop only', icon: 'nightlight-round' },
 ];
 
-export default function MarkAbsentForm({ child, onClose, onSubmit, loading = false, error = '' }) {
+export default function MarkAbsentForm({
+  child,
+  existing = null,
+  absences = [],
+  onClose,
+  onSubmit,
+  onCancelAbsence,
+  loading = false,
+  error = '',
+}) {
   const scale = useTextScale();
   const today = new Date();
-  const [date, setDate] = useState(today);
-  const [direction, setDirection] = useState('BOTH');
-  const [reason, setReason] = useState('');
+  const [date, setDate] = useState(existing ? parseDate(existing.date) : today);
+  const [direction, setDirection] = useState(existing ? existing.direction : 'BOTH');
+  const [reason, setReason] = useState(existing ? existing.reason : '');
   const [reasonFocused, setReasonFocused] = useState(false);
 
   const isToday = isSameDay(date, today);
   const isTomorrow = isSameDay(date, addDays(today, 1));
   const isCustom = !isToday && !isTomorrow;
   const apiDate = toApiDate(date);
+  const match = absences.find(a => a.date === apiDate && a.direction === direction);
+  const isUpdating = Boolean(match);
+  const canCancel = isUpdating && isAfterToday(apiDate);
 
   function openDatePicker() {
     DateTimePickerAndroid.open({
@@ -34,8 +46,8 @@ export default function MarkAbsentForm({ child, onClose, onSubmit, loading = fal
       mode: 'date',
       minimumDate: addDays(today, -30),
       maximumDate: addDays(today, 90),
-      onChange: (event, selected) => {
-        if (event.type === 'set' && selected) {
+      onValueChange: (event, selected) => {
+        if (selected) {
           setDate(selected);
         }
       },
@@ -136,6 +148,15 @@ export default function MarkAbsentForm({ child, onClose, onSubmit, loading = fal
         style={[styles.reasonInput, { fontSize: 13 * scale }, reasonFocused && styles.reasonFocused]}
       />
 
+      {isUpdating && (
+        <View style={styles.notice}>
+          <MaterialIcons name="info-outline" size={20} color={colors.busYellowText} />
+          <AppText color={colors.busYellowText} style={styles.noticeText}>
+            Already marked absent for this date & direction. Submitting will update the reason.
+          </AppText>
+        </View>
+      )}
+
       {error !== '' && (
         <AppText variant="bodySmall" color={colors.errorRed} style={styles.error}>
           {error}
@@ -143,11 +164,25 @@ export default function MarkAbsentForm({ child, onClose, onSubmit, loading = fal
       )}
 
       <AppButton
-        title="Mark Absent"
+        title={isUpdating ? 'Update Absence Reason' : 'Mark Absent'}
         loading={loading}
         onPress={() => onSubmit({ date: apiDate, direction, reason: reason.trim() })}
         style={styles.submit}
       />
+
+      {canCancel && onCancelAbsence && (
+        <Pressable
+          onPress={() => onCancelAbsence(match)}
+          disabled={loading}
+          accessibilityRole="button"
+          style={styles.cancelAbsence}
+        >
+          <MaterialIcons name="delete-outline" size={18} color={colors.errorRed} />
+          <AppText color={colors.errorRed} style={styles.cancelAbsenceText}>
+            Cancel Absence
+          </AppText>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -221,5 +256,26 @@ const styles = StyleSheet.create({
   reasonFocused: { borderColor: colors.primaryNavy, borderWidth: 1.6 },
   error: { marginTop: 14, textAlign: 'center' },
   submit: { marginTop: 24 },
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 14,
+    padding: 12,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: '#F59E0B4D',
+    backgroundColor: colors.busYellowLight,
+  },
+  noticeText: { flex: 1, fontFamily: fonts.medium, fontSize: 12 },
+  cancelAbsence: {
+    minHeight: 44,
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  cancelAbsenceText: { fontFamily: fonts.semiBold, fontSize: 14 },
 });
 

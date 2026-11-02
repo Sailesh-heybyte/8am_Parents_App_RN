@@ -22,3 +22,9 @@ export async function markAbsent(studentId, { date, direction, reason }) {
     ...(reason ? { reason } : {}),
   });
 }
+
+export async function cancelAbsence(studentId, { date, direction }) {
+  await client.delete(`/api/v1/people/students/${studentId}/absent`, {
+    params: { absence_date: date, direction },
+  });
+}

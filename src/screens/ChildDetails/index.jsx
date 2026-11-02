@@ -13,19 +13,21 @@ import {
 } from 'phosphor-react-native';
 import AppText from '../../components/AppText';
 import BackButton from '../../components/BackButton';
-import BottomSheet from '../../components/BottomSheet';
 import Card from '../../components/Card';
 import IconTile from '../../components/IconTile';
 import StatusBadge from '../../components/StatusBadge';
 import FeatureCard from './FeatureCard';
-import { getAbsences, markAbsent } from '../../api/absences';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import MarkAbsentSheet from '../../components/MarkAbsentSheet';
+import { cancelAbsence, getAbsences } from '../../api/absences';
 import { getErrorMessage } from '../../utils/errors';
 import { useSnackbar } from '../../context/SnackbarContext';
 import AbsenceCard from './AbsenceCard';
 import NoAbsencesCard from './NoAbsencesCard';
-import MarkAbsentForm from './MarkAbsentForm';
 import { colors } from '../../styles';
 import styles from './ChildDetails.styles';
+
+const SHORT_NAMES = { AM_PICKUP: 'AM Pickup', PM_DROP: 'PM Drop', BOTH: 'Full Day' };
 
 export default function ChildDetailsScreen({ navigation, route }) {
   const { child } = route.params;
@@ -37,8 +39,9 @@ export default function ChildDetailsScreen({ navigation, route }) {
   const [absences, setAbsences] = useState([]);
   const [absencesLoading, setAbsencesLoading] = useState(true);
   const [absentSheetOpen, setAbsentSheetOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState('');
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [editAbsence, setEditAbsence] = useState(null);
 
   const loadAbsences = useCallback(async () => {
     try {
@@ -53,22 +56,32 @@ export default function ChildDetailsScreen({ navigation, route }) {
   }, [loadAbsences]);
 
   function openAbsentSheet() {
-    setSaveError('');
+    setEditAbsence(null);
     setAbsentSheetOpen(true);
   }
 
-  async function handleMarkAbsent(values) {
-    setSaving(true);
-    setSaveError('');
+  function openEditSheet(absence) {
+    setEditAbsence(absence);
+    setAbsentSheetOpen(true);
+  }
+
+  function handleCancelFromSheet(absence) {
+    setAbsentSheetOpen(false);
+    setTimeout(() => setCancelTarget(absence), 300);
+  }
+
+  async function handleConfirmCancel() {
+    setCancelling(true);
     try {
-      await markAbsent(child.id, values);
+      await cancelAbsence(child.id, cancelTarget);
       await loadAbsences();
-      setAbsentSheetOpen(false);
-      showSnackbar('Absence recorded successfully.', 'success');
+      setCancelTarget(null);
+      showSnackbar('Absence cancelled successfully.', 'success');
     } catch (e) {
-      setSaveError(getErrorMessage(e, "Couldn't update the absence. Please try again."));
+      setCancelTarget(null);
+      showSnackbar(getErrorMessage(e, "Couldn't update the absence. Please try again."), 'error');
     } finally {
-      setSaving(false);
+      setCancelling(false);
     }
   }
 
@@ -181,7 +194,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
             Icon={ClockCounterClockwiseIcon}
             iconBg={colors.infoBlueBg}
             iconColor={colors.infoBlue}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('TripHistory', { child })}
           />
           <FeatureCard
             title="Home Location"
@@ -212,21 +225,42 @@ export default function ChildDetailsScreen({ navigation, route }) {
         ) : (
           <View style={styles.stack}>
             {absences.map(absence => (
-              <AbsenceCard key={absence.id} absence={absence} onPress={() => {}} onCancel={() => {}} />
+              <AbsenceCard
+                key={absence.id}
+                absence={absence}
+                onPress={() => openEditSheet(absence)}
+                onCancel={() => setCancelTarget(absence)}
+              />
             ))}
           </View>
         )}
       </ScrollView>
 
-      <BottomSheet visible={absentSheetOpen} onClose={() => setAbsentSheetOpen(false)}>
-        <MarkAbsentForm
-          child={child}
-          onClose={() => setAbsentSheetOpen(false)}
-          onSubmit={handleMarkAbsent}
-          loading={saving}
-          error={saveError}
-        />
-      </BottomSheet>
+      <MarkAbsentSheet
+        child={child}
+        existing={editAbsence}
+        absences={absences}
+        visible={absentSheetOpen}
+        onClose={() => setAbsentSheetOpen(false)}
+        onSaved={loadAbsences}
+        onCancelAbsence={handleCancelFromSheet}
+      />
+      <ConfirmDialog
+        visible={cancelTarget !== null}
+        title="Cancel Absence?"
+        message={
+          cancelTarget
+            ? `Are you sure you want to cancel the marked absence for ${cancelTarget.date} (${SHORT_NAMES[cancelTarget.direction] || 'Full Day'})?`
+            : ''
+        }
+        icon={<MaterialIcons name="delete-outline" size={20} color={colors.errorRed} />}
+        cancelLabel="Keep Marked"
+        confirmLabel="Yes, Cancel Absence"
+        destructive
+        loading={cancelling}
+        onCancel={() => setCancelTarget(null)}
+        onConfirm={handleConfirmCancel}
+      />
     </SafeAreaView>
   );
 }

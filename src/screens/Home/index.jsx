@@ -3,6 +3,7 @@ import { ActivityIndicator, Animated, RefreshControl, View, useWindowDimensions 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from '../../components/AppText';
 import StatusBadge from '../../components/StatusBadge';
+import MarkAbsentSheet from '../../components/MarkAbsentSheet';
 import { useAuth } from '../../context/AuthContext';
 import { getMe } from '../../api/auth';
 import { getChildren } from '../../api/children';
@@ -10,6 +11,7 @@ import { getParentName, saveParentName } from '../../utils/storage';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
 import ChildCard from './ChildCard';
+import ChildPickerSheet from './ChildPickerSheet';
 import HomeHeader from './HomeHeader';
 import HomeTopBar from './HomeTopBar';
 import ActionCard from './ActionCard';
@@ -28,7 +30,22 @@ export default function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [absentChild, setAbsentChild] = useState(null);
   const scrollY = useRef(new Animated.Value(0)).current;
+
+  function handleMarkAbsentPress() {
+    if (children.length === 1) {
+      setAbsentChild(children[0]);
+    } else {
+      setPickerOpen(true);
+    }
+  }
+
+  function handlePickChild(child) {
+    setPickerOpen(false);
+    setTimeout(() => setAbsentChild(child), 300);
+  }
 
   const padding = { paddingHorizontal: width < 380 ? 16 : 20 };
 
@@ -127,7 +144,7 @@ export default function HomeScreen({ navigation }) {
                   icon="event-busy"
                   iconBg={colors.busYellowLight}
                   iconColor={colors.busYellowText}
-                  onPress={() => {}}
+                  onPress={handleMarkAbsentPress}
                 />
               </View>
             )}
@@ -145,6 +162,17 @@ export default function HomeScreen({ navigation }) {
         onBellPress={() => {}}
         onLogout={signOut}
         horizontalPadding={padding.paddingHorizontal}
+      />
+      <ChildPickerSheet
+        visible={pickerOpen}
+        childList={children}
+        onClose={() => setPickerOpen(false)}
+        onSelect={handlePickChild}
+      />
+      <MarkAbsentSheet
+        child={absentChild}
+        visible={absentChild !== null}
+        onClose={() => setAbsentChild(null)}
       />
     </View>
   );
