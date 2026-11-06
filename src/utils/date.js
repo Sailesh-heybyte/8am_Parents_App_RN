@@ -46,3 +46,12 @@ export function formatClock(isoString) {
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return `${hours}:${minutes} ${date.getHours() < 12 ? 'AM' : 'PM'}`;
 }
+
+export function formatDateTime(isoString) {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return '';
+  const time = formatClock(isoString);
+  if (!time) return '';
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} • ${time}`;
+}

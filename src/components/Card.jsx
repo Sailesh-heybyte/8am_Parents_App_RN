@@ -2,20 +2,25 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { colors, radius, shadows } from '../styles';
 
-export default function Card({ children, onPress, style }) {
+export default function Card({ children, onPress, style, ...rest }) {
   if (onPress) {
     return (
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
         style={({ pressed }) => [styles.card, pressed && styles.pressed, style]}
+        {...rest}
       >
         {children}
       </Pressable>
     );
   }
 
-  return <View style={[styles.card, style]}>{children}</View>;
+  return (
+    <View style={[styles.card, style]} {...rest}>
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -31,4 +36,3 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inputFill,
   },
 });
-

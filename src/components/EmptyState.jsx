@@ -5,9 +5,9 @@ import AppButton from './AppButton';
 import IconTile from './IconTile';
 import { colors, radius } from '../styles';
 
-export default function EmptyState({ icon, iconBg, title, message, actionTitle, onAction }) {
+export default function EmptyState({ icon, iconBg, title, message, actionTitle, onAction, style }) {
   return (
-    <View style={styles.box}>
+    <View style={[styles.box, style]}>
       {icon && (
         <IconTile size={80} bg={iconBg} style={styles.tile}>
           {icon}
@@ -52,4 +52,3 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
 });
-

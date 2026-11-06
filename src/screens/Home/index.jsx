@@ -136,7 +136,7 @@ export default function HomeScreen({ navigation }) {
                   icon="notifications-none"
                   iconBg={colors.infoBlueBg}
                   iconColor={colors.infoBlue}
-                  onPress={() => {}}
+                  onPress={() => navigation.navigate('Announcements')}
                 />
                 <ActionCard
                   title="Mark Absent"
@@ -159,7 +159,7 @@ export default function HomeScreen({ navigation }) {
       />
       <HomeTopBar
         scrollY={scrollY}
-        onBellPress={() => {}}
+        onBellPress={() => navigation.navigate('Announcements')}
         onLogout={signOut}
         horizontalPadding={padding.paddingHorizontal}
       />
