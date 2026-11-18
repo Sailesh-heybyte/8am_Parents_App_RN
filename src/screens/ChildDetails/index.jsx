@@ -175,7 +175,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
             Icon={GearIcon}
             iconBg={colors.liveGreenBg}
             iconColor={colors.liveGreenText}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('AlertSettings', { child })}
           />
         </View>
 

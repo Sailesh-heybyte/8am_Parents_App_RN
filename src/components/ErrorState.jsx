@@ -4,13 +4,20 @@ import { MaterialIcons } from '@react-native-vector-icons/material-icons/static'
 import AppText from './AppText';
 import { colors, fonts } from '../styles';
 
-export default function ErrorState({ message, onRetry, buttonColor = colors.primaryNavy }) {
+export default function ErrorState({ title, message, onRetry, buttonColor = colors.primaryNavy }) {
   return (
     <View style={styles.container}>
       <MaterialIcons name="error-outline" size={48} color="#F44336" />
-      <AppText color={colors.textSecondary} style={styles.message}>
-        {message}
-      </AppText>
+      <View style={styles.copy}>
+        {title ? (
+          <AppText variant="heading2" color={colors.textPrimary} style={styles.title}>
+            {title}
+          </AppText>
+        ) : null}
+        <AppText color={colors.textSecondary} style={styles.message}>
+          {message}
+        </AppText>
+      </View>
       <Pressable
         accessibilityRole="button"
         onPress={onRetry}
@@ -30,6 +37,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
     gap: 16,
+  },
+  copy: {
+    alignSelf: 'stretch',
+  },
+  title: {
+    textAlign: 'center',
+    marginBottom: 8,
   },
   message: {
     alignSelf: 'stretch',
