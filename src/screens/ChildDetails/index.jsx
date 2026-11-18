@@ -166,7 +166,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
             Icon={ChatIcon}
             iconBg={colors.neutralBadgeBg}
             iconColor={colors.primaryNavy}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('Complaints', { studentId: child.id })}
           />
           <FeatureCard
             fill
@@ -175,7 +175,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
             Icon={GearIcon}
             iconBg={colors.liveGreenBg}
             iconColor={colors.liveGreenText}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('AlertSettings', { child })}
           />
         </View>
 

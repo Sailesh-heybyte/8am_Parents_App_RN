@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, TextInput, View } from 'react-native';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
+import AppText from './AppText';
 import useTextScale from '../hooks/useTextScale';
 import { colors, fonts, radius } from '../styles';
 
@@ -10,6 +11,8 @@ export default function AppTextInput({
   value,
   editable = true,
   labelBackground = colors.background,
+  error,
+  multiline = false,
   style,
   ...rest
 }) {
@@ -37,33 +40,56 @@ export default function AppTextInput({
   };
 
   return (
-    <View style={[styles.box, focused && styles.focused, !editable && styles.disabled, style]}>
-      {icon && <MaterialIcons name={icon} size={20} color={colors.textSecondary} />}
-      <TextInput
-        style={[styles.input, { fontSize: 15 * scale }]}
-        value={value}
-        editable={editable}
-        placeholderTextColor={colors.textSecondary}
-        cursorColor={colors.primaryNavy}
-        selectionColor={colors.primaryNavyLight}
-        allowFontScaling={false}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        {...rest}
-      />
-      {label && (
-        <Animated.Text
+    <View>
+      <View
+        style={[
+          styles.box,
+          focused && styles.focused,
+          !editable && styles.disabled,
+          error && (focused ? styles.errorFocused : styles.error),
+          style,
+        ]}
+      >
+        {icon && (
+          <MaterialIcons
+            name={icon}
+            size={20}
+            color={colors.textSecondary}
+            style={multiline ? styles.multilineIcon : undefined}
+          />
+        )}
+        <TextInput
+          style={[styles.input, { fontSize: 15 * scale }, multiline && styles.multilineInput]}
+          value={value}
+          editable={editable}
+          placeholderTextColor={colors.textSecondary}
+          cursorColor={colors.primaryNavy}
+          selectionColor={colors.primaryNavyLight}
           allowFontScaling={false}
-          style={[
-            styles.label,
-            { fontSize: 13.5 * scale },
-            { left: restLeft - 4, backgroundColor: active ? labelBackground : 'transparent' },
-            labelMotion,
-          ]}
-        >
-          {label}
-        </Animated.Text>
-      )}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          {...rest}
+          multiline={multiline}
+        />
+        {label && (
+          <Animated.Text
+            allowFontScaling={false}
+            style={[
+              styles.label,
+              { fontSize: 13.5 * scale },
+              { left: restLeft - 4, backgroundColor: active ? labelBackground : 'transparent' },
+              labelMotion,
+            ]}
+          >
+            {label}
+          </Animated.Text>
+        )}
+      </View>
+      {error ? (
+        <AppText variant="bodySmall" color={colors.errorRed} style={styles.errorText}>
+          {error}
+        </AppText>
+      ) : null}
     </View>
   );
 }
@@ -87,12 +113,34 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inputFillDisabled,
     borderColor: colors.cardBorderSubtle,
   },
+  error: {
+    borderColor: colors.errorRed,
+    borderWidth: 1,
+  },
+  errorFocused: {
+    borderColor: colors.errorRed,
+    borderWidth: 1.6,
+  },
+  multilineIcon: {
+    alignSelf: 'flex-start',
+    marginTop: 14,
+  },
   input: {
     flex: 1,
     paddingVertical: 14,
     fontFamily: fonts.regular,
     fontSize: 15,
     color: colors.textPrimary,
+  },
+  multilineInput: {
+    textAlignVertical: 'top',
+    minHeight: 120,
+    paddingTop: 14,
+  },
+  errorText: {
+    marginTop: 6,
+    marginLeft: 4,
+    fontSize: 12,
   },
   label: {
     position: 'absolute',

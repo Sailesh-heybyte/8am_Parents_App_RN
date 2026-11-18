@@ -5,6 +5,8 @@ import ChildDetailsScreen from '../screens/ChildDetails';
 import TripHistoryScreen from '../screens/TripHistory';
 import TripDetailScreen from '../screens/TripDetail';
 import AnnouncementsScreen from '../screens/Announcements';
+import ComplaintsScreen from '../screens/Complaints';
+import AlertSettingsScreen from '../screens/AlertSettings';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +18,8 @@ export default function AppStack() {
       <Stack.Screen name="TripHistory" component={TripHistoryScreen} />
       <Stack.Screen name="TripDetail" component={TripDetailScreen} />
       <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
+      <Stack.Screen name="Complaints" component={ComplaintsScreen} />
+      <Stack.Screen name="AlertSettings" component={AlertSettingsScreen} />
     </Stack.Navigator>
   );
 }
