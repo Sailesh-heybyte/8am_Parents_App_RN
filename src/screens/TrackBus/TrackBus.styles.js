@@ -6,9 +6,6 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
   header: {
     position: 'absolute',
     flexDirection: 'row',

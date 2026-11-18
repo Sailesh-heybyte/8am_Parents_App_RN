@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Mapbox from '@rnmapbox/maps';
 import { HouseIcon } from 'phosphor-react-native';
+import AppMapView from '../../components/AppMapView';
 import AppText from '../../components/AppText';
 import BackButton from '../../components/BackButton';
 import Card from '../../components/Card';
 import { useLanguage } from '../../context/LanguageContext';
-import { MAPBOX_STYLE_URL } from '../../config';
 import { colors } from '../../styles';
 import styles from './TrackBus.styles';
 
@@ -17,22 +17,14 @@ export default function TrackBus({ navigation, route }) {
   const { child } = route.params;
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const padding = width < 380 ? 16 : 20;
   const hasHome = child.homeLatitude != null && child.homeLongitude != null;
   const home = hasHome ? [child.homeLongitude, child.homeLatitude] : null;
 
   return (
     <View style={styles.screen}>
-      <Mapbox.MapView
-        style={[styles.map, { width, height }]}
-        styleURL={MAPBOX_STYLE_URL}
-        surfaceView={false}
-        compassEnabled={false}
-        scaleBarEnabled={false}
-        logoEnabled
-        attributionEnabled
-      >
+      <AppMapView style={StyleSheet.absoluteFill}>
         <Mapbox.Camera
           centerCoordinate={home || HYDERABAD}
           zoomLevel={home ? 15 : 10}
@@ -45,7 +37,7 @@ export default function TrackBus({ navigation, route }) {
             </View>
           </Mapbox.MarkerView>
         ) : null}
-      </Mapbox.MapView>
+      </AppMapView>
 
       <View style={[styles.header, { top: insets.top + 12, left: padding, right: padding }]}>
         <BackButton onPress={() => navigation.goBack()} />

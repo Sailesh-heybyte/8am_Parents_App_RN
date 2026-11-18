@@ -204,7 +204,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
             Icon={HouseIcon}
             iconBg={colors.busYellowLight}
             iconColor={colors.busYellowText}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('HomeLocation', { child })}
           />
         </View>
 

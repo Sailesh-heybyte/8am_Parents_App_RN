@@ -23,6 +23,9 @@ function toSettings(data) {
   return {
     amLeadMinutes: data.am_notify_lead_minutes ?? 15,
     pmLeadMinutes: data.pm_notify_lead_minutes ?? 15,
+    homeLatitude: data.home_latitude ?? null,
+    homeLongitude: data.home_longitude ?? null,
+    homeAddress: data.home_address || '',
   };
 }
 
@@ -40,5 +43,13 @@ export async function updateNotificationSettings(studentId, { amLeadMinutes, pmL
     body,
   );
   return data && data.am_notify_lead_minutes != null ? toSettings(data) : getNotificationSettings(studentId);
+}
+
+export async function updateHomeLocation(studentId, { latitude, longitude, address }) {
+  const { data } = await client.patch(
+    `/api/v1/people/me/children/${studentId}/notification-settings`,
+    { home_latitude: latitude, home_longitude: longitude, home_address: address },
+  );
+  return data && data.home_latitude != null ? toSettings(data) : getNotificationSettings(studentId);
 }
 
