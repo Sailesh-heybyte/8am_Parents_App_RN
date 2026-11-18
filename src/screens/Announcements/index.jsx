@@ -1,16 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
-import AppText from '../../components/AppText';
 import EmptyState from '../../components/EmptyState';
+import ErrorState from '../../components/ErrorState';
 import ScreenHeader from '../../components/ScreenHeader';
 import { getMyAnnouncements } from '../../api/announcements';
 import { getErrorMessage } from '../../utils/errors';
@@ -54,12 +47,6 @@ export default function AnnouncementsScreen({ navigation }) {
     await load();
   }
 
-  function handleRetry() {
-    setIsLoading(true);
-    setError('');
-    load();
-  }
-
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <View style={padding}>
@@ -74,20 +61,7 @@ export default function AnnouncementsScreen({ navigation }) {
           <ActivityIndicator size="large" color={colors.primaryNavy} />
         </View>
       ) : error ? (
-        <View style={[styles.centerContainer, styles.errorContainer]}>
-          <MaterialIcons name="error-outline" size={48} color="#F44336" />
-          <AppText color={colors.textSecondary} style={styles.errorMessage}>
-            {error}
-          </AppText>
-          <Pressable
-            style={({ pressed }) => [styles.retryButton, pressed && styles.retryButtonPressed]}
-            onPress={handleRetry}
-            accessibilityRole="button"
-          >
-            <MaterialIcons name="refresh" size={18} color={colors.surfaceWhite} />
-            <AppText style={styles.retryButtonText}>Try Again</AppText>
-          </Pressable>
-        </View>
+        <ErrorState message={error} onRetry={load} buttonColor={colors.pink} />
       ) : (
         <FlatList
           data={announcements}
