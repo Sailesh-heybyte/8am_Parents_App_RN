@@ -4,6 +4,7 @@ import { MaterialIcons } from '@react-native-vector-icons/material-icons/static'
 import AppText from '../../components/AppText';
 import Card from '../../components/Card';
 import IconTile from '../../components/IconTile';
+import { useLanguage } from '../../context/LanguageContext';
 import { colors, fonts, radius } from '../../styles';
 
 export default function LeadTimeCard({
@@ -16,6 +17,9 @@ export default function LeadTimeCard({
   disabled,
   onPress,
 }) {
+  const { t } = useLanguage();
+  const away = t('minutesAway', { minutes });
+
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
@@ -31,7 +35,7 @@ export default function LeadTimeCard({
       </AppText>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${title}, ${minutes} minutes. Change`}
+        accessibilityLabel={`${title}, ${away}. Change`}
         disabled={disabled}
         onPress={onPress}
         style={({ pressed }) => [
@@ -42,10 +46,10 @@ export default function LeadTimeCard({
       >
         <View>
           <AppText variant="label" color={colors.textSecondary} style={styles.radiusLabel}>
-            Notification radius
+            {t('notificationRadius')}
           </AppText>
           <AppText variant="heading3" color={colors.primaryNavy} style={styles.radiusValue}>
-            {`${minutes} minutes away`}
+            {away}
           </AppText>
         </View>
         <View style={styles.editBox}>

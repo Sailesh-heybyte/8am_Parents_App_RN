@@ -21,6 +21,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import MarkAbsentSheet from '../../components/MarkAbsentSheet';
 import { cancelAbsence, getAbsences } from '../../api/absences';
 import { getErrorMessage } from '../../utils/errors';
+import { useLanguage } from '../../context/LanguageContext';
 import { useSnackbar } from '../../context/SnackbarContext';
 import AbsenceCard from './AbsenceCard';
 import NoAbsencesCard from './NoAbsencesCard';
@@ -35,6 +36,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
   const stop = child.stopName || child.routeName;
   const initial = child.name ? child.name[0].toUpperCase() : 'S';
   const homeLocationSet = child.homeLatitude != null && child.homeLongitude != null;
+  const { t } = useLanguage();
   const showSnackbar = useSnackbar();
   const [absences, setAbsences] = useState([]);
   const [absencesLoading, setAbsencesLoading] = useState(true);
@@ -109,7 +111,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
               {child.name}
             </AppText>
             <View style={styles.badges}>
-              <StatusBadge label={`Roll No: ${child.rollNo}`} tone="neutral" />
+              <StatusBadge label={`${t('rollNo')} ${child.rollNo}`} tone="neutral" />
               {stop !== '' && <StatusBadge label={`Stop ${stop}`} tone="success" />}
             </View>
           </View>
@@ -122,26 +124,26 @@ export default function ChildDetailsScreen({ navigation, route }) {
           <View style={styles.trackingInfo}>
             <View style={styles.trackingTitleRow}>
               <AppText variant="heading2" style={styles.trackingTitle}>
-                Live Bus Tracking
+                {t('liveBusTracking')}
               </AppText>
               <View style={styles.liveDot} />
             </View>
             <AppText variant="bodySmall" numberOfLines={2} style={styles.trackingDesc}>
-              Advanced real-time vehicle tracking system featuring high-precision accuracy and robust child safety protocols.
+              {t('busTrackingDesc')}
             </AppText>
           </View>
           <MaterialIcons name="chevron-right" size={22} color={colors.textSecondary} />
         </Card>
 
         <AppText variant="heading2" style={styles.sectionTitle}>
-          Quick Access
+          {t('quickAccess')}
         </AppText>
 
         <View style={styles.gridRow}>
           <FeatureCard
             fill
-            title="Track Bus"
-            subtitle="Real-time GPS"
+            title={t('trackBus')}
+            subtitle={t('realTimeGps')}
             Icon={BusIcon}
             iconBg={colors.busYellowLight}
             iconColor={colors.busYellowText}
@@ -149,8 +151,8 @@ export default function ChildDetailsScreen({ navigation, route }) {
           />
           <FeatureCard
             fill
-            title="Announcements"
-            subtitle="Latest updates"
+            title={t('announcements')}
+            subtitle={t('latestUpdates')}
             Icon={BellIcon}
             iconBg={colors.infoBlueBg}
             iconColor={colors.infoBlue}
@@ -161,8 +163,8 @@ export default function ChildDetailsScreen({ navigation, route }) {
         <View style={styles.gridRow}>
           <FeatureCard
             fill
-            title="Complaints"
-            subtitle="New Complaint"
+            title={t('complaints')}
+            subtitle={t('newComplaint')}
             Icon={ChatIcon}
             iconBg={colors.neutralBadgeBg}
             iconColor={colors.primaryNavy}
@@ -170,8 +172,8 @@ export default function ChildDetailsScreen({ navigation, route }) {
           />
           <FeatureCard
             fill
-            title="Alert Settings"
-            subtitle="Configure your bus alerts"
+            title={t('alertSettings')}
+            subtitle={t('alertSettingsDesc')}
             Icon={GearIcon}
             iconBg={colors.liveGreenBg}
             iconColor={colors.liveGreenText}
@@ -181,24 +183,24 @@ export default function ChildDetailsScreen({ navigation, route }) {
 
         <View style={styles.stack}>
           <FeatureCard
-            title="Mark Absent"
-            subtitle={`Notify school & bus if ${child.name} won't attend (Morning, Evening, or Full Day)`}
+            title={t('markAbsent')}
+            subtitle={t('markAbsentDesc', { childName: child.name })}
             Icon={CalendarXIcon}
             iconBg={colors.warningOrangeBg}
             iconColor={colors.warningOrange}
             onPress={openAbsentSheet}
           />
           <FeatureCard
-            title="Trip History"
-            subtitle={`Past bus trips for ${child.name} and how each one ended`}
+            title={t('tripHistory')}
+            subtitle={t('tripHistoryDesc', { childName: child.name })}
             Icon={ClockCounterClockwiseIcon}
             iconBg={colors.infoBlueBg}
             iconColor={colors.infoBlue}
             onPress={() => navigation.navigate('TripHistory', { child })}
           />
           <FeatureCard
-            title="Home Location"
-            subtitle={homeLocationSet ? 'Home address set' : 'Home address not set'}
+            title={t('homeLocation')}
+            subtitle={homeLocationSet ? t('homeLocationSetLabel') : t('homeLocationNotSet')}
             Icon={HouseIcon}
             iconBg={colors.busYellowLight}
             iconColor={colors.busYellowText}
@@ -208,12 +210,12 @@ export default function ChildDetailsScreen({ navigation, route }) {
 
         <View style={styles.absencesHeader}>
           <AppText variant="heading2" style={styles.absencesTitle}>
-            Planned Absences
+            {t('plannedAbsences')}
           </AppText>
           <Pressable onPress={openAbsentSheet} hitSlop={6} accessibilityRole="button" style={styles.markLink}>
             <MaterialIcons name="add" size={16} color={colors.primaryNavy} />
             <AppText variant="bodySmall" style={styles.markLinkText}>
-              Mark Absent
+              {t('markAbsent')}
             </AppText>
           </Pressable>
         </View>

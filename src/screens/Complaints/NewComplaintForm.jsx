@@ -8,6 +8,7 @@ import AppTextInput from '../../components/AppTextInput';
 import Card from '../../components/Card';
 import ChildPickerSheet from '../../components/ChildPickerSheet';
 import { createComplaint } from '../../api/complaints';
+import { useLanguage } from '../../context/LanguageContext';
 import { useSnackbar } from '../../context/SnackbarContext';
 import { getErrorMessage } from '../../utils/errors';
 import { colors, fonts, radius } from '../../styles';
@@ -21,6 +22,7 @@ const CATEGORIES = [
 ];
 
 export default function NewComplaintForm({ childList, initialStudentId, onSubmitted }) {
+  const { t } = useLanguage();
   const showSnackbar = useSnackbar();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -150,7 +152,7 @@ export default function NewComplaintForm({ childList, initialStudentId, onSubmit
 
           <View style={styles.section}>
             <AppText variant="heading3" color={colors.textPrimary} style={styles.sectionLabel}>
-              Subject
+              {t('complaintSubject')}
             </AppText>
             <AppTextInput
               icon="title"
@@ -168,7 +170,7 @@ export default function NewComplaintForm({ childList, initialStudentId, onSubmit
           </View>
 
           <AppText variant="heading3" color={colors.textPrimary} style={styles.sectionLabel}>
-            Description
+            {t('complaintDescription')}
           </AppText>
           <AppTextInput
             icon="description"
@@ -185,7 +187,7 @@ export default function NewComplaintForm({ childList, initialStudentId, onSubmit
           />
 
           <AppButton
-            title="Submit"
+            title={t('submitComplaint')}
             onPress={handleSubmit}
             loading={isSubmitting}
             disabled={isSubmitting}

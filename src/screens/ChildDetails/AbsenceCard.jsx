@@ -3,16 +3,18 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
 import AppText from '../../components/AppText';
 import Card from '../../components/Card';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatDate, isAfterToday } from '../../utils/date';
 import { colors, radius } from '../../styles';
 
 export const DIRECTIONS = {
-  AM_PICKUP: { label: 'Morning (AM Pickup)', icon: 'wb-sunny', fg: colors.busYellowText, bg: colors.busYellowLight },
-  PM_DROP: { label: 'Evening (PM Drop)', icon: 'nightlight-round', fg: '#512DA8', bg: '#EDE7F6' },
+  AM_PICKUP: { labelKey: 'morningPickup', icon: 'wb-sunny', fg: colors.busYellowText, bg: colors.busYellowLight },
+  PM_DROP: { labelKey: 'eveningDrop', icon: 'nightlight-round', fg: '#512DA8', bg: '#EDE7F6' },
   BOTH: { label: 'Full Day (Pickup & Drop)', icon: 'all-inclusive', fg: colors.textPrimary, bg: colors.neutralBadgeBg },
 };
 
 export default function AbsenceCard({ absence, onPress, onCancel }) {
+  const { t } = useLanguage();
   const direction = DIRECTIONS[absence.direction] || DIRECTIONS.BOTH;
   const hasReason = absence.reason.trim() !== '';
   const canCancel = isAfterToday(absence.date);
@@ -23,7 +25,7 @@ export default function AbsenceCard({ absence, onPress, onCancel }) {
         <View style={[styles.pill, { backgroundColor: direction.bg }]}>
           <MaterialIcons name={direction.icon} size={13} color={direction.fg} />
           <AppText variant="badge" color={direction.fg} style={styles.pillText}>
-            {direction.label}
+            {direction.labelKey ? t(direction.labelKey) : direction.label}
           </AppText>
         </View>
         {canCancel && (

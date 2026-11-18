@@ -6,6 +6,7 @@ import AppText from '../../components/AppText';
 import ErrorState from '../../components/ErrorState';
 import ScreenHeader from '../../components/ScreenHeader';
 import { getNotificationSettings, updateNotificationSettings } from '../../api/children';
+import { useLanguage } from '../../context/LanguageContext';
 import { useSnackbar } from '../../context/SnackbarContext';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
@@ -15,6 +16,7 @@ import styles from './AlertSettings.styles';
 
 export default function AlertSettingsScreen({ navigation, route }) {
   const { child } = route.params;
+  const { t } = useLanguage();
   const showSnackbar = useSnackbar();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -68,7 +70,7 @@ export default function AlertSettingsScreen({ navigation, route }) {
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <View style={padding}>
         <ScreenHeader
-          title="Alert Settings"
+          title={t('alertSettings')}
           subtitle="Configure push notification alert distance and arrival time"
           onBack={() => navigation.goBack()}
           right={
@@ -106,8 +108,8 @@ export default function AlertSettingsScreen({ navigation, route }) {
             icon={<GraduationCapIcon weight="bold" size={24} color={colors.infoBlue} />}
             iconBg={colors.infoBlueBg}
             iconColor={colors.infoBlue}
-            title="To school"
-            description={`Receive push notifications when the bus is getting close to your home stop to pick up ${child.name}.`}
+            title={t('toSchoolTitle')}
+            description={t('toSchoolDesc', { name: child.name })}
             minutes={settings.amLeadMinutes}
             disabled={isSaving}
             onPress={() => setEditing('am')}
@@ -116,8 +118,8 @@ export default function AlertSettingsScreen({ navigation, route }) {
             icon={<HouseIcon weight="fill" size={24} color={colors.busYellowText} />}
             iconBg={colors.busYellowLight}
             iconColor={colors.busYellowText}
-            title="To home"
-            description={`Receive push notifications when the bus is getting close to your home stop to drop off ${child.name}.`}
+            title={t('toHomeTitle')}
+            description={t('toHomeDesc', { name: child.name })}
             minutes={settings.pmLeadMinutes}
             disabled={isSaving}
             onPress={() => setEditing('pm')}
@@ -127,7 +129,7 @@ export default function AlertSettingsScreen({ navigation, route }) {
 
       <LeadTimeSheet
         visible={!!editing}
-        title={editing === 'am' ? 'To school' : 'To home'}
+        titleKey={editing === 'am' ? 'toSchoolTitle' : 'toHomeTitle'}
         value={editing === 'am' ? settings?.amLeadMinutes : settings?.pmLeadMinutes}
         onClose={() => setEditing(null)}
         onSelect={minutes => changeLead(editing === 'am' ? 'amLeadMinutes' : 'pmLeadMinutes', minutes)}
