@@ -1,9 +1,9 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import AppText from './AppText';
 import { colors, radius } from '../styles';
 
-export default function AppButton({ title, onPress, loading = false, disabled = false, style }) {
+export default function AppButton({ title, onPress, loading = false, disabled = false, icon, style }) {
   const isDisabled = disabled || loading;
 
   return (
@@ -20,6 +20,11 @@ export default function AppButton({ title, onPress, loading = false, disabled = 
     >
       {loading ? (
         <ActivityIndicator size={20} color={colors.surfaceWhite} />
+      ) : icon ? (
+        <View style={styles.iconRow}>
+          {icon}
+          <AppText variant="button">{title}</AppText>
+        </View>
       ) : (
         <AppText variant="button">{title}</AppText>
       )}
@@ -38,5 +43,10 @@ const styles = StyleSheet.create({
   },
   pressed: { backgroundColor: colors.primaryNavyDark },
   disabled: { opacity: 0.6 },
+  iconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
 });
 

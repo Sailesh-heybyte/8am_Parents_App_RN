@@ -19,3 +19,11 @@ export async function getMyComplaints() {
   const { data } = await client.get('/api/v1/complaints/mine');
   return Array.isArray(data) ? data.map(toComplaint) : [];
 }
+
+export async function createComplaint({ subject, description, category, studentId }) {
+  const body = { subject, description };
+  if (category) body.category = category;
+  if (studentId) body.student_id = studentId;
+  const { data } = await client.post('/api/v1/complaints', body);
+  return toComplaint(data);
+}

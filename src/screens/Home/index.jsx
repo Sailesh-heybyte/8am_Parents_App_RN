@@ -11,7 +11,7 @@ import { getParentName, saveParentName } from '../../utils/storage';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
 import ChildCard from './ChildCard';
-import ChildPickerSheet from './ChildPickerSheet';
+import ChildPickerSheet from '../../components/ChildPickerSheet';
 import HomeHeader from './HomeHeader';
 import HomeTopBar from './HomeTopBar';
 import ActionCard from './ActionCard';

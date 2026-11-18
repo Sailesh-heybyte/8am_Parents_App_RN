@@ -37,8 +37,4 @@ export default StyleSheet.create({
   emptyState: {
     justifyContent: 'center',
   },
-  placeholder: {
-    textAlign: 'center',
-    marginHorizontal: 24,
-  },
 });

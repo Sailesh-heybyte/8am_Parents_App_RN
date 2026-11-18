@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
-import AppText from '../../components/AppText';
 import EmptyState from '../../components/EmptyState';
 import ErrorState from '../../components/ErrorState';
 import ScreenHeader from '../../components/ScreenHeader';
@@ -12,20 +11,11 @@ import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
 import ComplaintCard from './ComplaintCard';
 import ComplaintTabs from './ComplaintTabs';
+import NewComplaintForm from './NewComplaintForm';
 import styles from './Complaints.styles';
 
 function Separator() {
   return <View style={styles.separator} />;
-}
-
-function NewComplaintPlaceholder({ studentId }) {
-  return (
-    <View style={styles.center}>
-      <AppText color={colors.textSecondary} style={styles.placeholder}>
-        New complaint form — coming in Step 45
-      </AppText>
-    </View>
-  );
 }
 
 export default function ComplaintsScreen({ navigation, route }) {
@@ -62,6 +52,11 @@ export default function ComplaintsScreen({ navigation, route }) {
   async function handleRefresh() {
     setIsRefreshing(true);
     await load();
+  }
+
+  function handleSubmitted() {
+    setActiveTab('list');
+    load();
   }
 
   const childNames = useMemo(
@@ -120,8 +115,11 @@ export default function ComplaintsScreen({ navigation, route }) {
         </View>
 
         <View style={activeTab === 'new' ? styles.panel : styles.hidden}>
-          {/* studentId is the default child for the form added in Step 45. */}
-          <NewComplaintPlaceholder studentId={studentId} />
+          <NewComplaintForm
+            childList={children}
+            initialStudentId={studentId}
+            onSubmitted={handleSubmitted}
+          />
         </View>
       </View>
     </SafeAreaView>
