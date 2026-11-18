@@ -27,6 +27,20 @@ export default StyleSheet.create({
     fontFamily: fonts.bold,
     fontSize: 13,
   },
+  demo: {
+    position: 'absolute',
+    height: 32,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: colors.surfaceWhite,
+    ...shadows.card,
+  },
+  demoText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 12,
+    lineHeight: 16,
+  },
   bottom: {
     position: 'absolute',
   },

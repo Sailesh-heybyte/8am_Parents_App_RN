@@ -9,9 +9,38 @@ function toChild(item) {
     stopName: item.stop_name || '',
     routeName: item.route_name || '',
     busId: item.bus_id || null,
+    stopId: item.stop_id || null,
     homeLatitude: item.home_latitude ?? null,
     homeLongitude: item.home_longitude ?? null,
   };
+}
+
+function toStop(stop) {
+  return {
+    id: stop.id || '',
+    name: stop.name || '',
+    sequence: stop.sequence ?? 0,
+    latitude: stop.latitude ?? 0,
+    longitude: stop.longitude ?? 0,
+  };
+}
+
+function toRoute(data) {
+  return {
+    routeId: data.route_id || '',
+    routeName: data.route_name || '',
+    direction: (data.direction || '').toUpperCase(),
+    start: [data.start_lng ?? 0, data.start_lat ?? 0],
+    end: [data.end_lng ?? 0, data.end_lat ?? 0],
+    driverName: data.driver_name || '',
+    driverPhone: data.driver_phone || '',
+    stops: Array.isArray(data.stops) ? data.stops.map(toStop) : [],
+  };
+}
+
+export async function getChildRoute(studentId) {
+  const { data } = await client.get(`/api/v1/people/me/children/${studentId}/route`);
+  return toRoute(data);
 }
 
 export async function getChildren() {
