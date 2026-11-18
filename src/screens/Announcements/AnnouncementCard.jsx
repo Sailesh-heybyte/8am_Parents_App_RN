@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
-import { LayoutAnimation, Platform, StyleSheet, UIManager, View } from 'react-native';
+import { LayoutAnimation, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
 import AppText from '../../components/AppText';
 import Card from '../../components/Card';
 import { formatDateTime } from '../../utils/date';
 import { colors, fonts } from '../../styles';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const PRIORITY = {
   urgent: { label: 'Urgent', color: '#D32F2F', bg: '#FFEBEE' },

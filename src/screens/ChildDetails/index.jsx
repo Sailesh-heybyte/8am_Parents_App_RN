@@ -117,7 +117,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
           </View>
         </Card>
 
-        <Card onPress={() => {}} style={styles.trackingCard}>
+        <Card onPress={() => navigation.navigate('TrackBus', { child })} style={styles.trackingCard}>
           <IconTile size={48} bg={colors.busYellowLight} style={styles.busTile}>
             <MaterialIcons name="directions-bus" size={24} color={colors.busYellowText} />
           </IconTile>
@@ -147,7 +147,7 @@ export default function ChildDetailsScreen({ navigation, route }) {
             Icon={BusIcon}
             iconBg={colors.busYellowLight}
             iconColor={colors.busYellowText}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('TrackBus', { child })}
           />
           <FeatureCard
             fill

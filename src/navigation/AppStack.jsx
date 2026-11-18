@@ -7,6 +7,7 @@ import TripDetailScreen from '../screens/TripDetail';
 import AnnouncementsScreen from '../screens/Announcements';
 import ComplaintsScreen from '../screens/Complaints';
 import AlertSettingsScreen from '../screens/AlertSettings';
+import TrackBus from '../screens/TrackBus';
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +21,7 @@ export default function AppStack() {
       <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
       <Stack.Screen name="Complaints" component={ComplaintsScreen} />
       <Stack.Screen name="AlertSettings" component={AlertSettingsScreen} />
+      <Stack.Screen name="TrackBus" component={TrackBus} />
     </Stack.Navigator>
   );
 }

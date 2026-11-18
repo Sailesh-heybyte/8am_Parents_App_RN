@@ -1,0 +1,63 @@
+diff --git a/node_modules/@rnmapbox/maps/android/src/main/java/com/rnmapbox/rnmbx/components/mapview/RNMBXMapView.kt b/node_modules/@rnmapbox/maps/android/src/main/java/com/rnmapbox/rnmbx/components/mapview/RNMBXMapView.kt
+index 1448b5d..d641022 100644
+--- a/node_modules/@rnmapbox/maps/android/src/main/java/com/rnmapbox/rnmbx/components/mapview/RNMBXMapView.kt
++++ b/node_modules/@rnmapbox/maps/android/src/main/java/com/rnmapbox/rnmbx/components/mapview/RNMBXMapView.kt
+@@ -1551,6 +1551,16 @@ open class RNMBXMapView(private val mContext: Context, var mManager: RNMBXMapVie
+             addView(mapView)
+         }
+         this.addOnLayoutChangeListener(this)
++        // 8AM patch: if this view already has its size, size the new map now (onLayoutChange may never fire again)
++        post {
++            if (width > 0 && height > 0) {
++                mMapView.measure(
++                    MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
++                    MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
++                )
++                mMapView.layout(0, 0, width, height)
++            }
++        }
+ 
+         val map = mMapView.getMapboxMap()
+         mMap = map
+@@ -1942,7 +1952,8 @@ open class RNMBXMapView(private val mContext: Context, var mManager: RNMBXMapVie
+                 MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+                 MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
+             )
+-            mapView.layout(mapView.left, mapView.top, mapView.right, mapView.bottom)
++            // 8AM patch: lay the map out at the parent's full size (its own old bounds can still be 0x0 under Fabric)
++            mapView.layout(0, 0, width, height)
+         }
+     }
+ 
+diff --git a/node_modules/@rnmapbox/maps/lib/module/components/MapView.js b/node_modules/@rnmapbox/maps/lib/module/components/MapView.js
+index 35177ed..6f3c6f7 100644
+--- a/node_modules/@rnmapbox/maps/lib/module/components/MapView.js
++++ b/node_modules/@rnmapbox/maps/lib/module/components/MapView.js
+@@ -21,7 +21,12 @@ if (RNMBXModule == null) {
+ }
+ const styles = StyleSheet.create({
+   matchParent: {
+-    flex: 1
++    // 8AM patch: flex:1 resolved to height 0 on RN 0.88 Android; fill the wrapper explicitly
++    position: 'absolute',
++    top: 0,
++    left: 0,
++    right: 0,
++    bottom: 0
+   }
+ });
+ const defaultStyleURL = RNMBXModule.StyleURL.Street;
+diff --git a/node_modules/@rnmapbox/maps/src/components/MapView.tsx b/node_modules/@rnmapbox/maps/src/components/MapView.tsx
+index 7b40a46..7a294b1 100644
+--- a/node_modules/@rnmapbox/maps/src/components/MapView.tsx
++++ b/node_modules/@rnmapbox/maps/src/components/MapView.tsx
+@@ -39,7 +39,8 @@ if (RNMBXModule == null) {
+ }
+ 
+ const styles = StyleSheet.create({
+-  matchParent: { flex: 1 },
++  // 8AM patch: flex:1 resolved to height 0 on RN 0.88 Android; fill the wrapper explicitly
++  matchParent: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+ });
+ 
+ const defaultStyleURL = RNMBXModule.StyleURL.Street;
