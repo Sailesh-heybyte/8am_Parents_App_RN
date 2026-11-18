@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: colors.background,
   },
   row: {

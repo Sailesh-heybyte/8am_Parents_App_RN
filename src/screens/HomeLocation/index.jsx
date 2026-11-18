@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, View, useWindowDimensions } from 'react-native';
+import {
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Pressable,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
 import Mapbox from '@rnmapbox/maps';
@@ -12,6 +19,7 @@ import { getNotificationSettings, updateHomeLocation } from '../../api/children'
 import { useLanguage } from '../../context/LanguageContext';
 import { useSnackbar } from '../../context/SnackbarContext';
 import { getErrorMessage } from '../../utils/errors';
+import { getCurrentPosition, requestLocationPermission } from '../../utils/location';
 import { colors } from '../../styles';
 import styles from './HomeLocation.styles';
 
@@ -24,12 +32,15 @@ export default function HomeLocation({ navigation, route }) {
   const showSnackbar = useSnackbar();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const padding = { paddingHorizontal: width < 380 ? 16 : 20 };
+  const horizontalPadding = width < 380 ? 16 : 20;
+  const padding = { paddingHorizontal: horizontalPadding };
   const hasHome = child.homeLatitude != null && child.homeLongitude != null;
   const mapRef = useRef(null);
+  const cameraRef = useRef(null);
   const [address, setAddress] = useState('');
   const [addressError, setAddressError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -44,6 +55,39 @@ export default function HomeLocation({ navigation, route }) {
       active = false;
     };
   }, [child.id]);
+
+  async function goToMyLocation({ quiet = false } = {}) {
+    if (isLocating) return;
+    setIsLocating(true);
+    try {
+      const granted = await requestLocationPermission();
+      if (!granted) {
+        if (!quiet) showSnackbar(t('locationPermissionDenied'), 'error');
+        return;
+      }
+      const center = await getCurrentPosition();
+      cameraRef.current?.setCamera({
+        centerCoordinate: center,
+        zoomLevel: 17,
+        animationDuration: 800,
+        animationMode: 'flyTo',
+      });
+    } catch {
+      if (!quiet) showSnackbar(t('currentLocationFailed'), 'error');
+    } finally {
+      setIsLocating(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!hasHome) {
+      // Not a hook; the name matches the screen action.
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      goToMyLocation({ quiet: true });
+    }
+    // Only the first time this screen opens, matching the Flutter app.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSave() {
     if (isSaving) return;
@@ -86,6 +130,7 @@ export default function HomeLocation({ navigation, route }) {
       <View style={styles.mapArea}>
         <AppMapView ref={mapRef}>
           <Mapbox.Camera
+            ref={cameraRef}
             defaultSettings={{
               centerCoordinate: hasHome ? [child.homeLongitude, child.homeLatitude] : DEFAULT_CENTER,
               zoomLevel: hasHome ? PIN_ZOOM : 12,
@@ -95,6 +140,30 @@ export default function HomeLocation({ navigation, route }) {
         <View pointerEvents="none" style={styles.pinLayer}>
           <MaterialIcons name="location-on" size={48} color={colors.errorRed} style={styles.pin} />
         </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('useCurrentLocation')}
+          accessibilityState={{ busy: isLocating }}
+          disabled={isLocating}
+          onPress={() => {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            goToMyLocation();
+          }}
+          style={({ pressed }) => [
+            styles.locate,
+            { right: horizontalPadding },
+            pressed && styles.locatePressed,
+          ]}
+        >
+          {isLocating ? (
+            <ActivityIndicator size={18} color={colors.primaryNavy} />
+          ) : (
+            <MaterialIcons name="my-location" size={20} color={colors.primaryNavy} />
+          )}
+          <AppText color={colors.primaryNavy} style={styles.locateText}>
+            {t('useCurrentLocation')}
+          </AppText>
+        </Pressable>
       </View>
 
       <KeyboardAvoidingView behavior="padding">
