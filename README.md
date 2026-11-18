@@ -1,97 +1,88 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 8am Parents App
 
-# Getting Started
+React Native app (`EightAMParent`). Node **22.11 or newer**.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
-
-## Step 1: Start Metro
-
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
+## First time only
 
 ```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+npm install
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+iOS also needs pods (Mac only, once, and again after native dependency changes):
 
 ```sh
 bundle install
+bundle exec pod install --project-directory=ios
 ```
 
-Then, and every time you update your native dependencies, run:
+## Start the app
+
+Always start Metro first, in one terminal:
 
 ```sh
-bundle exec pod install
+npm start
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Leave it running. Use a second terminal for the commands below.
+
+### With emulator / simulator
+
+Android emulator (start the emulator in Android Studio first, or let the command boot one):
 
 ```sh
-# Using npm
+npm run android
+```
+
+iOS Simulator (Mac only):
+
+```sh
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Without emulator (real phone)
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+**Android phone**
 
-## Step 3: Modify your app
+1. On the phone: Settings → Developer options → USB debugging on.
+2. Plug in the phone and accept the USB prompt.
+3. Run:
 
-Now that you have successfully run the app, let's make changes!
+```sh
+npm run android
+```
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+If the phone cannot reach Metro:
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+```sh
+adb reverse tcp:8081 tcp:8081
+```
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+**iPhone** (Mac only)
 
-## Congratulations! :tada:
+1. Plug in the phone and trust the computer.
+2. Run:
 
-You've successfully run and modified your React Native App. :partying_face:
+```sh
+npm run ios -- --device
+```
 
-### Now what?
+Pick your phone from the list. The first run needs a signing team in Xcode (`ios/EightAMParent.xcworkspace`).
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+### App already installed
 
-# Troubleshooting
+You only need Metro. Open the app on the phone or emulator:
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+```sh
+npm start
+```
 
-# Learn More
+Reload: press `r` in the Metro terminal.
 
-To learn more about React Native, take a look at the following resources:
+## Everyday commands
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+| What | Command |
+| --- | --- |
+| Metro | `npm start` |
+| Android (emulator or USB phone) | `npm run android` |
+| iOS Simulator | `npm run ios` |
+| iPhone | `npm run ios -- --device` |
