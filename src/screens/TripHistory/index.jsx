@@ -5,6 +5,7 @@ import ChildPill from '../../components/ChildPill';
 import MessageCard from '../../components/MessageCard';
 import ScreenHeader from '../../components/ScreenHeader';
 import { getTripHistory } from '../../api/trips';
+import { useLanguage } from '../../context/LanguageContext';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
 import TripCard from './TripCard';
@@ -16,6 +17,7 @@ function Separator() {
 
 export default function TripHistoryScreen({ navigation, route }) {
   const { child } = route.params;
+  const { t } = useLanguage();
   const { width } = useWindowDimensions();
   const padding = { paddingHorizontal: width < 380 ? 16 : 20 };
   const [trips, setTrips] = useState([]);
@@ -46,7 +48,7 @@ export default function TripHistoryScreen({ navigation, route }) {
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <View style={padding}>
         <ScreenHeader
-          title="Trip History"
+          title={t('tripHistory')}
           subtitle="Past bus trips and how each one ended"
           onBack={() => navigation.goBack()}
           right={<ChildPill name={child.name} />}

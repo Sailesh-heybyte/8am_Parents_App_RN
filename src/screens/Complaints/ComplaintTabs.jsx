@@ -1,13 +1,16 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import AppText from '../../components/AppText';
+import { useLanguage } from '../../context/LanguageContext';
 import { colors, fonts, shadows } from '../../styles';
 
 export default function ComplaintTabs({ value, onChange }) {
+  const { t } = useLanguage();
+
   return (
     <View style={styles.container}>
-      <Tab label="Complaints" selected={value === 'list'} onPress={() => onChange('list')} />
-      <Tab label="New Complaint" selected={value === 'new'} onPress={() => onChange('new')} />
+      <Tab label={t('complaintsTitle')} selected={value === 'list'} onPress={() => onChange('list')} />
+      <Tab label={t('newComplaint')} selected={value === 'new'} onPress={() => onChange('new')} />
     </View>
   );
 }

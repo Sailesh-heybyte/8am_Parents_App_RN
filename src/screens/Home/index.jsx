@@ -5,6 +5,7 @@ import AppText from '../../components/AppText';
 import StatusBadge from '../../components/StatusBadge';
 import MarkAbsentSheet from '../../components/MarkAbsentSheet';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { getMe } from '../../api/auth';
 import { getChildren } from '../../api/children';
 import { getParentName, saveParentName } from '../../utils/storage';
@@ -23,6 +24,7 @@ function Separator() {
 
 export default function HomeScreen({ navigation }) {
   const { signOut } = useAuth();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [name, setName] = useState('');
@@ -131,16 +133,16 @@ export default function HomeScreen({ navigation }) {
             {children.length > 0 && (
               <View style={[styles.actionsRow, padding]}>
                 <ActionCard
-                  title="Announcements"
-                  subtitle="Notices & circulars"
+                  title={t('announcements')}
+                  subtitle={t('announcementsSubtitle')}
                   icon="notifications-none"
                   iconBg={colors.infoBlueBg}
                   iconColor={colors.infoBlue}
                   onPress={() => navigation.navigate('Announcements')}
                 />
                 <ActionCard
-                  title="Mark Absent"
-                  subtitle="Notify school & bus"
+                  title={t('markAbsent')}
+                  subtitle={t('markAbsentSubtitle')}
                   icon="event-busy"
                   iconBg={colors.busYellowLight}
                   iconColor={colors.busYellowText}
@@ -150,7 +152,7 @@ export default function HomeScreen({ navigation }) {
             )}
             <View style={[styles.sectionRow, padding]}>
               <AppText variant="heading2" style={styles.sectionTitle}>
-                My Children
+                {t('myChildrenTitle')}
               </AppText>
               <StatusBadge label={`${children.length}`} tone="neutral" style={styles.countBadge} />
             </View>

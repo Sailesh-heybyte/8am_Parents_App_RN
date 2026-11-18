@@ -6,6 +6,7 @@ import EmptyState from '../../components/EmptyState';
 import ErrorState from '../../components/ErrorState';
 import ScreenHeader from '../../components/ScreenHeader';
 import { getMyAnnouncements } from '../../api/announcements';
+import { useLanguage } from '../../context/LanguageContext';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
 import AnnouncementCard from './AnnouncementCard';
@@ -16,6 +17,7 @@ function Separator() {
 }
 
 export default function AnnouncementsScreen({ navigation }) {
+  const { t } = useLanguage();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const padding = { paddingHorizontal: width < 380 ? 16 : 20 };
@@ -51,8 +53,8 @@ export default function AnnouncementsScreen({ navigation }) {
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <View style={padding}>
         <ScreenHeader
-          title="Announcements"
-          subtitle="Official route notices and circulars from administration"
+          title={t('announcementsTitle')}
+          subtitle={t('announcementsHeaderDesc')}
           onBack={() => navigation.goBack()}
         />
       </View>
@@ -84,7 +86,7 @@ export default function AnnouncementsScreen({ navigation }) {
             <EmptyState
               icon={<MaterialIcons name="campaign" size={40} color={colors.pink} />}
               iconBg={colors.pinkBg}
-              message="No announcements yet."
+              message={t('noAnnouncements')}
               style={[styles.emptyState, { minHeight: height * 0.5 }]}
             />
           }

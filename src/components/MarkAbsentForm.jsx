@@ -5,12 +5,13 @@ import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import AppText from './AppText';
 import AppButton from './AppButton';
 import IconTile from './IconTile';
+import { useLanguage } from '../context/LanguageContext';
 import useTextScale from '../hooks/useTextScale';
 import { addDays, formatDate, isAfterToday, isSameDay, parseDate, toApiDate } from '../utils/date';
 import { colors, fonts, radius } from '../styles';
 
 const OPTIONS = [
-  { value: 'BOTH', title: 'Full Day', subtitle: 'Pickup & Drop', icon: 'all-inclusive' },
+  { value: 'BOTH', titleKey: 'fullDay', subtitle: 'Pickup & Drop', icon: 'all-inclusive' },
   { value: 'AM_PICKUP', title: 'Morning', subtitle: 'AM Pickup only', icon: 'wb-sunny' },
   { value: 'PM_DROP', title: 'Evening', subtitle: 'PM Drop only', icon: 'nightlight-round' },
 ];
@@ -25,6 +26,7 @@ export default function MarkAbsentForm({
   loading = false,
   error = '',
 }) {
+  const { t } = useLanguage();
   const scale = useTextScale();
   const today = new Date();
   const [date, setDate] = useState(existing ? parseDate(existing.date) : today);
@@ -62,7 +64,7 @@ export default function MarkAbsentForm({
         </IconTile>
         <View style={styles.titleText}>
           <AppText variant="heading2" style={styles.title}>
-            Mark Absent
+            {t('markAbsent')}
           </AppText>
           <AppText variant="bodySmall" color={colors.primaryNavy} style={styles.childName}>
             {child.name}
@@ -101,7 +103,7 @@ export default function MarkAbsentForm({
       </View>
 
       <AppText variant="heading3" style={styles.sectionLabel}>
-        Absence Direction
+        {t('absentDirection')}
       </AppText>
       <View style={styles.optionRow}>
         {OPTIONS.map(option => {
@@ -114,7 +116,7 @@ export default function MarkAbsentForm({
             >
               <MaterialIcons name={option.icon} size={20} color={selected ? colors.primaryNavy : colors.textSecondary} />
               <AppText color={selected ? colors.primaryNavy : colors.textPrimary} style={styles.optionTitle}>
-                {option.title}
+                {option.titleKey ? t(option.titleKey) : option.title}
               </AppText>
               <AppText color={selected ? '#243B5ACC' : colors.textSecondary} style={styles.optionSubtitle}>
                 {option.subtitle}
@@ -126,7 +128,7 @@ export default function MarkAbsentForm({
 
       <View style={styles.reasonHeader}>
         <AppText variant="heading3" style={styles.reasonLabel}>
-          Reason (optional, max 500 chars)
+          {t('reasonOptional')}
         </AppText>
         <AppText color="#9E9E9E" style={styles.counter}>
           {reason.length}/500
@@ -164,7 +166,7 @@ export default function MarkAbsentForm({
       )}
 
       <AppButton
-        title={isUpdating ? 'Update Absence Reason' : 'Mark Absent'}
+        title={isUpdating ? 'Update Absence Reason' : t('markAbsent')}
         loading={loading}
         onPress={() => onSubmit({ date: apiDate, direction, reason: reason.trim() })}
         style={styles.submit}
@@ -179,7 +181,7 @@ export default function MarkAbsentForm({
         >
           <MaterialIcons name="delete-outline" size={18} color={colors.errorRed} />
           <AppText color={colors.errorRed} style={styles.cancelAbsenceText}>
-            Cancel Absence
+            {t('cancelAbsence')}
           </AppText>
         </Pressable>
       )}

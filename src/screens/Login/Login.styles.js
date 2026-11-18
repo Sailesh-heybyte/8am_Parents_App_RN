@@ -9,6 +9,10 @@ export default StyleSheet.create({
   content: {
     paddingVertical: 16,
   },
+  languageRow: {
+    alignItems: 'flex-end',
+    marginBottom: 8,
+  },
   logoBox: {
     alignSelf: 'flex-start',
     borderRadius: radius.md,

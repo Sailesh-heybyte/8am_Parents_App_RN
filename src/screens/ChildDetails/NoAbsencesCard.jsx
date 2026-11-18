@@ -3,16 +3,18 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
 import AppText from '../../components/AppText';
 import Card from '../../components/Card';
+import { useLanguage } from '../../context/LanguageContext';
 import { colors, fonts, radius } from '../../styles';
 
 export default function NoAbsencesCard({ childName, onMarkPress }) {
+  const { t } = useLanguage();
   return (
     <Card style={styles.card}>
       <View style={styles.iconCircle}>
         <MaterialIcons name="check-circle-outline" size={24} color={colors.liveGreen} />
       </View>
       <AppText variant="heading3" style={styles.title}>
-        No upcoming absences marked
+        {t('noAbsencesRecorded')}
       </AppText>
       <AppText variant="bodySmall" style={styles.text}>
         Bus service will operate normally for {childName}.
@@ -24,7 +26,7 @@ export default function NoAbsencesCard({ childName, onMarkPress }) {
       >
         <MaterialIcons name="add" size={16} color={colors.primaryNavy} />
         <AppText variant="buttonSmall" color={colors.primaryNavy}>
-          Mark Absent
+          {t('markAbsent')}
         </AppText>
       </Pressable>
     </Card>

@@ -7,6 +7,7 @@ import ErrorState from '../../components/ErrorState';
 import ScreenHeader from '../../components/ScreenHeader';
 import { getChildren } from '../../api/children';
 import { getMyComplaints } from '../../api/complaints';
+import { useLanguage } from '../../context/LanguageContext';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
 import ComplaintCard from './ComplaintCard';
@@ -20,6 +21,7 @@ function Separator() {
 
 export default function ComplaintsScreen({ navigation, route }) {
   const studentId = route.params?.studentId;
+  const { t } = useLanguage();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const padding = { paddingHorizontal: width < 380 ? 16 : 20 };
@@ -68,7 +70,7 @@ export default function ComplaintsScreen({ navigation, route }) {
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <View style={padding}>
         <ScreenHeader
-          title="Complaints"
+          title={t('complaintsTitle')}
           subtitle="Submit requests or report issues directly to administration"
           onBack={() => navigation.goBack()}
         />
@@ -106,7 +108,7 @@ export default function ComplaintsScreen({ navigation, route }) {
                 <EmptyState
                   icon={<MaterialIcons name="feedback" size={40} color={colors.primaryNavy} />}
                   iconBg="#243B5A14"
-                  message="No complaints yet."
+                  message={t('noComplaints')}
                   style={[styles.emptyState, { minHeight: height * 0.5 }]}
                 />
               }

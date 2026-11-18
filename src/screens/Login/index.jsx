@@ -6,9 +6,11 @@ import AppText from '../../components/AppText';
 import AppButton from '../../components/AppButton';
 import AppTextInput from '../../components/AppTextInput';
 import Card from '../../components/Card';
+import LanguageSelector from '../../components/LanguageSelector';
 import { requestOtp, verifyOtp } from '../../api/auth';
 import { getErrorMessage } from '../../utils/errors';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useSnackbar } from '../../context/SnackbarContext';
 import { colors } from '../../styles';
 import styles from './Login.styles';
@@ -18,6 +20,7 @@ const DEV_OTP = __DEV__ ? '123456' : '';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
+  const { t } = useLanguage();
   const showSnackbar = useSnackbar();
   const { width } = useWindowDimensions();
   const [phone, setPhone] = useState('');
@@ -34,7 +37,7 @@ export default function LoginScreen() {
     try {
       await requestOtp(phone);
       setOtpSent(true);
-      showSnackbar('OTP sent to your number');
+      showSnackbar(t('mockOtpSent'));
     } catch (error) {
       showSnackbar(getErrorMessage(error, 'Failed to send OTP. Please check the number.'), 'error');
     } finally {
@@ -51,9 +54,9 @@ export default function LoginScreen() {
     try {
       const tokens = await verifyOtp(phone, otp);
       await signIn(tokens);
-      showSnackbar('Login successful', 'success');
+      showSnackbar(t('mockLoginSuccess'), 'success');
     } catch (error) {
-      showSnackbar(getErrorMessage(error, 'Invalid OTP or Number'), 'error');
+      showSnackbar(getErrorMessage(error, t('mockLoginFailed')), 'error');
     } finally {
       setLoading(false);
     }
@@ -75,20 +78,24 @@ export default function LoginScreen() {
         contentContainerStyle={[styles.content, { paddingHorizontal: width < 380 ? 16 : 20 }]}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.languageRow}>
+          <LanguageSelector />
+        </View>
+
         <View style={styles.logoBox}>
           <Image source={logo} style={styles.logo} accessibilityLabel="8AM Parents" />
         </View>
 
         <AppText variant="greeting" style={styles.welcome}>
-          Welcome to 8A.M!
+          {t('welcomeMessage')}
         </AppText>
         <AppText variant="bodySecondary" style={styles.subtitle}>
-          Track your child's school bus in real-time and travel with peace of mind.
+          {t('welcomeSubtitle')}
         </AppText>
 
         <Card style={styles.card}>
           <AppText variant="heading2" style={styles.cardTitle}>
-            {otpSent ? 'Verify & Login' : 'Sign in with Mobile'}
+            {otpSent ? t('verifyOtpButton') : 'Sign in with Mobile'}
           </AppText>
           <AppText variant="bodySmall" style={styles.cardSubtitle}>
             {otpSent
@@ -97,7 +104,7 @@ export default function LoginScreen() {
           </AppText>
 
           <AppTextInput
-            label="Mobile Number"
+            label={t('mobileNumberLabel')}
             icon="phone-android"
             keyboardType="number-pad"
             autoComplete="tel"
@@ -110,7 +117,7 @@ export default function LoginScreen() {
 
           {otpSent && (
             <AppTextInput
-              label="Enter OTP"
+              label={t('otpLabel')}
               icon="lock-outline"
               keyboardType="number-pad"
               autoComplete="sms-otp"
@@ -123,7 +130,7 @@ export default function LoginScreen() {
           )}
 
           <AppButton
-            title={otpSent ? 'Verify & Login' : 'Send OTP'}
+            title={otpSent ? t('verifyOtpButton') : t('requestOtpButton')}
             loading={loading}
             onPress={otpSent ? handleVerifyOtp : handleSendOtp}
             style={styles.button}
@@ -139,7 +146,7 @@ export default function LoginScreen() {
                 style={styles.resend}
                 onPress={loading ? undefined : handleResend}
               >
-                Resend OTP
+                {t('resendOtp')}
               </AppText>
             </View>
           )}

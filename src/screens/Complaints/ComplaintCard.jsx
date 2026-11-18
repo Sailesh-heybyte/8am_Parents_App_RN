@@ -4,16 +4,18 @@ import { MaterialIcons } from '@react-native-vector-icons/material-icons/static'
 import AppText from '../../components/AppText';
 import Card from '../../components/Card';
 import IconTile from '../../components/IconTile';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatDateTime } from '../../utils/date';
 import { colors, fonts } from '../../styles';
 
 const STATUS = {
-  resolved: { label: 'Resolved', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
+  resolved: { labelKey: 'statusResolved', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
   in_progress: { label: 'In Progress', color: '#1565C0', bg: '#E3F2FD', icon: 'pending-actions' },
   open: { label: 'Open', color: '#E65100', bg: '#FFF3E0', icon: 'hourglass-empty' },
 };
 
 export default function ComplaintCard({ complaint, childName }) {
+  const { t } = useLanguage();
   const status = STATUS[complaint.status] || STATUS.open;
 
   return (
@@ -30,7 +32,7 @@ export default function ComplaintCard({ complaint, childName }) {
             <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
               <MaterialIcons name={status.icon} size={12} color={status.color} />
               <AppText variant="heading3" color={status.color} style={styles.statusLabel}>
-                {status.label}
+                {status.labelKey ? t(status.labelKey) : status.label}
               </AppText>
             </View>
             {complaint.category ? (

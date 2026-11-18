@@ -4,18 +4,20 @@ import { MaterialIcons } from '@react-native-vector-icons/material-icons/static'
 import { ClockCountdownIcon } from 'phosphor-react-native';
 import AppText from '../../components/AppText';
 import BottomSheet from '../../components/BottomSheet';
+import { useLanguage } from '../../context/LanguageContext';
 import { colors, fonts } from '../../styles';
 
 const OPTIONS = [5, 10, 15, 20, 25, 30];
 
-export default function LeadTimeSheet({ visible, title, value, onSelect, onClose }) {
+export default function LeadTimeSheet({ visible, titleKey, value, onSelect, onClose }) {
+  const { t } = useLanguage();
   const { width } = useWindowDimensions();
   const bleed = width < 380 ? styles.bleedNarrow : styles.bleedWide;
 
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <AppText variant="heading3" color={colors.textPrimary} style={styles.title}>
-        {`${title} - Notification radius`}
+        {`${t(titleKey)} - ${t('notificationRadius')}`}
       </AppText>
       <AppText variant="label" color={colors.textSecondary} style={styles.subtitle}>
         Choose lead time before bus arrives at stop
@@ -50,7 +52,7 @@ export default function LeadTimeSheet({ visible, title, value, onSelect, onClose
                 color={selected ? colors.primaryNavy : colors.textPrimary}
                 style={selected ? styles.optionSelected : styles.optionText}
               >
-                {`${minutes} minutes away`}
+                {t('minutesAway', { minutes })}
               </AppText>
             </View>
             {selected ? <MaterialIcons name="check-circle" size={20} color={colors.primaryNavy} /> : null}

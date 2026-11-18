@@ -2,9 +2,11 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons/static';
 import AppText from './AppText';
+import { useLanguage } from '../context/LanguageContext';
 import { colors, fonts } from '../styles';
 
 export default function ErrorState({ title, message, onRetry, buttonColor = colors.primaryNavy }) {
+  const { t } = useLanguage();
   return (
     <View style={styles.container}>
       <MaterialIcons name="error-outline" size={48} color="#F44336" />
@@ -24,7 +26,7 @@ export default function ErrorState({ title, message, onRetry, buttonColor = colo
         style={({ pressed }) => [styles.button, { backgroundColor: buttonColor }, pressed && styles.pressed]}
       >
         <MaterialIcons name="refresh" size={18} color={colors.surfaceWhite} />
-        <AppText style={styles.buttonText}>Try Again</AppText>
+        <AppText style={styles.buttonText}>{t('tryAgain')}</AppText>
       </Pressable>
     </View>
   );
