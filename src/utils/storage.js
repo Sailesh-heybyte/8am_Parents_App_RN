@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PARENT_NAME_KEY = 'parentName';
+const LANGUAGE_KEY = 'language';
 
 export async function getParentName() {
   try {
@@ -19,6 +20,20 @@ export async function saveParentName(name) {
 export async function clearParentName() {
   try {
     await AsyncStorage.removeItem(PARENT_NAME_KEY);
+  } catch {}
+}
+
+export async function getLanguage() {
+  try {
+    return await AsyncStorage.getItem(LANGUAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export async function saveLanguage(code) {
+  try {
+    await AsyncStorage.setItem(LANGUAGE_KEY, code);
   } catch {}
 }
 

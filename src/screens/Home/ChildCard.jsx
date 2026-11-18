@@ -4,11 +4,13 @@ import { MaterialIcons } from '@react-native-vector-icons/material-icons/static'
 import AppText from '../../components/AppText';
 import Card from '../../components/Card';
 import StatusBadge from '../../components/StatusBadge';
+import { useLanguage } from '../../context/LanguageContext';
 import { colors, fonts } from '../../styles';
 
 const AVATAR_COLORS = ['#243B5A', '#4A6B5D', '#8B5E3C'];
 
 export default function ChildCard({ child, index, onPress }) {
+  const { t } = useLanguage();
   const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
   const initial = child.name ? child.name[0].toUpperCase() : 'C';
 
@@ -24,7 +26,7 @@ export default function ChildCard({ child, index, onPress }) {
           {child.name}
         </AppText>
         <AppText variant="bodySmall" style={styles.roll}>
-          Roll No: {child.rollNo}
+          {t('rollNo')} {child.rollNo}
         </AppText>
         <StatusBadge label="Bus Service Active" tone="success" style={styles.badge} />
       </View>
