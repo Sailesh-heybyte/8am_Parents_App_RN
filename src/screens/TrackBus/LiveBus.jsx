@@ -1,7 +1,3 @@
-// The live bus on the map: route line (grey = done, blue = ahead), stops,
-// bus icon, amber pulse and the child's initial.
-// The movement itself comes from the Flutter engine (tripTrackingController):
-// we give it GPS fixes, call tick() every frame, and draw what it says.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
@@ -14,7 +10,6 @@ const busImage = require('../../assets/images/bus.png');
 const FOLLOW_ZOOM = 15.5;
 const PULSE_MS = 1200;
 
-// ── Map styles (same values as the Flutter app) ──────────────────────────
 const round = { lineCap: 'round', lineJoin: 'round' };
 const casingStyle = { ...round, lineColor: '#FFFFFF', lineWidth: 8.5 };
 const doneStyle = { ...round, lineColor: '#64748B', lineWidth: 5.5 };
@@ -28,8 +23,6 @@ const busStyle = heading => ({
   iconIgnorePlacement: true,
 });
 
-// Two amber rings that grow and fade out of phase. The map animates the
-// change itself (transition), so JS only flips them every 1.2 s.
 const ringTransition = { duration: PULSE_MS, delay: 0 };
 const ringStyle = expanded => ({
   circleColor: '#F59E0B',
@@ -62,7 +55,6 @@ const stopStyle = {
   ],
 };
 
-// Navy badge with the child's initial, above the bus, always upright.
 const badgeStyle = {
   circleRadius: 11,
   circleColor: colors.primaryNavy,
@@ -91,11 +83,10 @@ export default function LiveBus({ roadPath, stops, stopsShape, fix, cameraRef, i
   const route = useMemo(() => createRoute(roadPath), [roadPath]);
   const trip = useMemo(() => createTripTracking(route, stops), [route, stops]);
 
-  const [firstPoint, setFirstPoint] = useState(null); // where the bus first appears
+  const [firstPoint, setFirstPoint] = useState(null);
   const [ringsOut, setRingsOut] = useState(false);
   const [finished, setFinished] = useState(false);
 
-  // Refs so each frame updates the map directly, without re-rendering React.
   const busRef = useRef(null);
   const busIconRef = useRef(null);
   const aheadRef = useRef(null);
@@ -104,8 +95,9 @@ export default function LiveBus({ roadPath, stops, stopsShape, fix, cameraRef, i
   const touchingRef = useRef(false);
   const zoomRef = useRef(FOLLOW_ZOOM);
   const shownRef = useRef(false);
+  const drawRef = useRef(() => {});
+  const startFramesRef = useRef(() => {});
 
-  // Draws one frame from the engine's current state.
   function draw() {
     const position = trip.position;
     if (!position) return;
@@ -124,7 +116,6 @@ export default function LiveBus({ roadPath, stops, stopsShape, fix, cameraRef, i
     }
     if (trip.status === 'completed') setFinished(true);
 
-    // Follow the bus: centred, pointing up, no tilt (not while the user pinches).
     if (!touchingRef.current) {
       cameraRef.current?.setCamera({
         centerCoordinate: position,
@@ -135,8 +126,8 @@ export default function LiveBus({ roadPath, stops, stopsShape, fix, cameraRef, i
       });
     }
   }
+  drawRef.current = draw;
 
-  // Runs tick() every frame until the engine says the bus has arrived.
   function startFrames() {
     if (frameRef.current) return;
     const step = () => {
@@ -146,12 +137,12 @@ export default function LiveBus({ roadPath, stops, stopsShape, fix, cameraRef, i
     };
     frameRef.current = requestAnimationFrame(step);
   }
+  startFramesRef.current = startFrames;
 
-  // Draw whenever the engine changes; stop everything when we leave.
   useEffect(() => {
-    const unsubscribe = trip.subscribe(draw);
+    const unsubscribe = trip.subscribe(() => drawRef.current());
     const appState = AppState.addEventListener('change', next => {
-      if (next === 'active') trip.resync(); // next fix jumps straight to the bus
+      if (next === 'active') trip.resync();
     });
     return () => {
       unsubscribe();
@@ -159,23 +150,18 @@ export default function LiveBus({ roadPath, stops, stopsShape, fix, cameraRef, i
       cancelAnimationFrame(frameRef.current);
       frameRef.current = 0;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trip]);
 
-  // Every new GPS fix goes into the engine.
   useEffect(() => {
-    if (fix && trip.onFix(fix)) startFrames();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (fix && trip.onFix(fix)) startFramesRef.current();
   }, [fix, trip]);
 
-  // Pulse: flip the rings every 1.2 s while the trip runs.
   useEffect(() => {
     if (!firstPoint || finished) return undefined;
     const timer = setInterval(() => setRingsOut(out => !out), PULSE_MS);
     return () => clearInterval(timer);
   }, [firstPoint, finished]);
 
-  // Pinch-zoom: keep the user's zoom; follow again shortly after they let go.
   function handleCameraChanged(event) {
     const state = event.nativeEvent;
     if (!state.properties?.isUserInteraction) return;
@@ -188,7 +174,6 @@ export default function LiveBus({ roadPath, stops, stopsShape, fix, cameraRef, i
     draw();
   }
 
-  // Layer order: route → stops → rings → bus → badge.
   const below = stopsShape ? 'stopDots' : 'routeAhead';
 
   return (

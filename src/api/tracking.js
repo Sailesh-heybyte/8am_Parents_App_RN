@@ -1,10 +1,9 @@
 import { openSse } from '../utils/sse';
 import client, { getAccessTokenForStream, refreshSessionForStream } from './client';
 
-const IDLE_MS = 45000; // the server sends a keepalive about every 10 s
-const MAX_WAIT_MS = 30000; // longest wait between reconnects
+const IDLE_MS = 45000;
+const MAX_WAIT_MS = 30000;
 
-// Reads { point: [lng, lat], timestamp } from a "location" event.
 function toFix(data) {
   const body = JSON.parse(data);
   const loc = body.data || body.location || body.payload || body.bus_location || body.signal || body;
@@ -17,9 +16,6 @@ function toFix(data) {
   };
 }
 
-// Live bus GPS over Server-Sent Events: GET /api/v1/tracking/buses/{busId}/events
-// Keeps reconnecting (2 s, 4 s, 8 s … 30 s) until the returned stop() is called.
-// onStatus gets: 'connecting' | 'live' | 'reconnecting' | 'ended' | 'noAccess' | 'signedOut'
 export function connectBusTracking(busId, { onLocation, onStatus }) {
   const url = `${client.defaults.baseURL}/api/v1/tracking/buses/${encodeURIComponent(busId)}/events`;
   let closeStream = null;
@@ -47,7 +43,6 @@ export function connectBusTracking(busId, { onLocation, onStatus }) {
     retryTimer = setTimeout(connect, wait);
   }
 
-  // 45 s of silence = a dead connection that never reported an error.
   function resetIdleTimer() {
     clearTimeout(idleTimer);
     idleTimer = setTimeout(retry, IDLE_MS);
@@ -61,7 +56,6 @@ export function connectBusTracking(busId, { onLocation, onStatus }) {
       return;
     }
     if (status === 401) {
-      // The login expired: refresh it once, then try again.
       if (!refreshed && (await refreshSessionForStream())) {
         refreshed = true;
         connect();
@@ -98,7 +92,6 @@ export function connectBusTracking(busId, { onLocation, onStatus }) {
           const fix = toFix(data);
           if (fix) onLocation(fix);
         } catch {
-          // A malformed event is skipped.
         }
       },
       onClose: handleClose,

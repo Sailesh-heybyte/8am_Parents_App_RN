@@ -19,14 +19,12 @@ import styles from './TrackBus.styles';
 
 const HYDERABAD = [78.4867, 17.385];
 
-// [0, 0] means the school hasn't placed that point yet.
 const isPlaced = point => point[0] !== 0 || point[1] !== 0;
 
 function stopFeature(kind, point, passed) {
   return { type: 'Feature', properties: { kind, passed }, geometry: { type: 'Point', coordinates: point } };
 }
 
-// Camera box around all points (zoomed out to show the whole route).
 function fitToPoints(camera, points, insets) {
   if (!camera || points.length === 0) return;
   const lngs = points.map(p => p[0]);
@@ -47,6 +45,10 @@ export default function TrackBus({ navigation, route: navRoute }) {
   const padding = width < 380 ? 16 : 20;
   const cameraRef = useRef(null);
   const stopDemoRef = useRef(null);
+  const homeRef = useRef(home);
+  const insetsRef = useRef(insets);
+  homeRef.current = home;
+  insetsRef.current = insets;
 
   const home = child.homeLatitude != null ? [child.homeLongitude, child.homeLatitude] : null;
   const initial = (child.name || '').trim().charAt(0).toUpperCase();
@@ -60,10 +62,9 @@ export default function TrackBus({ navigation, route: navRoute }) {
   const [passedStops, setPassedStops] = useState(0);
   const [appActive, setAppActive] = useState(AppState.currentState === 'active');
 
-  const fix = demoFix ?? liveFix; // one GPS reading: { point, timestamp }
+  const fix = demoFix ?? liveFix;
   const demoOn = demoFix != null;
 
-  // 1) Load the route, then the road line that follows its stops.
   useEffect(() => {
     let active = true;
     async function load() {
@@ -76,7 +77,8 @@ export default function TrackBus({ navigation, route: navRoute }) {
         if (!active) return;
         setRoadPath(path);
         const box = path.length ? path : waypoints;
-        fitToPoints(cameraRef.current, home ? [...box, home] : box, insets);
+        const homePoint = homeRef.current;
+        fitToPoints(cameraRef.current, homePoint ? [...box, homePoint] : box, insetsRef.current);
       } catch (e) {
         if (active) setRouteError(getErrorMessage(e));
       }
@@ -85,10 +87,8 @@ export default function TrackBus({ navigation, route: navRoute }) {
     return () => {
       active = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [child.id]);
 
-  // 2) Live bus stream: only while the app is open and the demo is off.
   useEffect(() => {
     const sub = AppState.addEventListener('change', state => setAppActive(state === 'active'));
     return () => sub.remove();
@@ -99,7 +99,6 @@ export default function TrackBus({ navigation, route: navRoute }) {
     return connectBusTracking(child.busId, { onLocation: setLiveFix, onStatus: setStatus });
   }, [child.busId, demoOn, appActive]);
 
-  // 3) Dev-only demo bus that drives along the real route.
   function toggleDemo() {
     if (stopDemoRef.current) {
       stopDemoRef.current();
@@ -111,7 +110,6 @@ export default function TrackBus({ navigation, route: navRoute }) {
   }
   useEffect(() => () => stopDemoRef.current?.(), []);
 
-  // Stops for the map: start, each stop (grey once passed), school.
   const stopsShape = useMemo(() => {
     if (!route) return null;
     const features = [];
@@ -124,7 +122,6 @@ export default function TrackBus({ navigation, route: navRoute }) {
     return features.length ? { type: 'FeatureCollection', features } : null;
   }, [route, child.stopId, passedStops]);
 
-  // Card subtitle: "Pantaloons · Stop #5 of 5"
   const stopIndex = route ? route.stops.findIndex(stop => stop.id === child.stopId) : -1;
   let subtitle = home ? t('homeLocationSetLabel') : t('homeLocationNotSet');
   if (stopIndex >= 0) {
@@ -195,7 +192,6 @@ export default function TrackBus({ navigation, route: navRoute }) {
   );
 }
 
-// "● LIVE", "Connecting…", "Trip ended", …
 function StatusLine({ status }) {
   const { t } = useLanguage();
   if (status === 'live') {

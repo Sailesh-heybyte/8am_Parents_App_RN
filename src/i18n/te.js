@@ -1,5 +1,3 @@
-// Telugu strings, copied from the Flutter app (lib/l10n/app_te.arb).
-// Placeholders like {name} are filled in by t('key', { name }).
 export default {
   appTitle: "8A.M",
   welcomeMessage: "8A.Mకి స్వాగతం!",

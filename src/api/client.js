@@ -100,7 +100,6 @@ export async function refreshSessionForStream() {
   try {
     await clearTokens();
   } catch {
-    // Storage is already unusable; the session still has to end.
   }
   onSessionExpired();
   return false;

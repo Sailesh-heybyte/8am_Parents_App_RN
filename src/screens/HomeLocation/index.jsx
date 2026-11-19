@@ -37,6 +37,7 @@ export default function HomeLocation({ navigation, route }) {
   const hasHome = child.homeLatitude != null && child.homeLongitude != null;
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
+  const goToMyLocationRef = useRef(() => {});
   const [address, setAddress] = useState('');
   const [addressError, setAddressError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -78,16 +79,13 @@ export default function HomeLocation({ navigation, route }) {
       setIsLocating(false);
     }
   }
+  goToMyLocationRef.current = goToMyLocation;
 
   useEffect(() => {
     if (!hasHome) {
-      // Not a hook; the name matches the screen action.
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      goToMyLocation({ quiet: true });
+      goToMyLocationRef.current({ quiet: true });
     }
-    // Only the first time this screen opens, matching the Flutter app.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasHome]);
 
   async function handleSave() {
     if (isSaving) return;
@@ -146,7 +144,6 @@ export default function HomeLocation({ navigation, route }) {
           accessibilityState={{ busy: isLocating }}
           disabled={isLocating}
           onPress={() => {
-            // eslint-disable-next-line react-hooks/rules-of-hooks
             goToMyLocation();
           }}
           style={({ pressed }) => [

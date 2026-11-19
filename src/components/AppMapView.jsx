@@ -3,11 +3,6 @@ import { StyleSheet, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 import { MAPBOX_STYLE_URL } from '../config';
 
-// surfaceView={false} because a SurfaceView was hidden behind the screen.
-// The map is given an explicit pixel size because flex:1 gave it a height of 0
-// on RN 0.88 Android (see patches/@rnmapbox+maps+10.3.18.patch).
-// The map is absolutely positioned so its pixel size can never push the parent's
-// layout (otherwise a stale size makes the map area grow past the screen).
 const AppMapView = forwardRef(function AppMapView({ style, children, ...rest }, ref) {
   const [size, setSize] = useState({ width: 0, height: 0 });
   const ready = size.width > 0 && size.height > 0;
