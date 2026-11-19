@@ -38,7 +38,7 @@ function Tab({ label, selected, onPress }) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#F2EFE9',
+    backgroundColor: colors.neutralBadgeBg,
     borderRadius: 10,
     borderWidth: 0.8,
     borderColor: colors.cardBorder,

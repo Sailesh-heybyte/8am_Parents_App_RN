@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   rowSelected: {
-    backgroundColor: '#F2EFE999',
+    backgroundColor: colors.neutralBadgeBgSoft,
   },
   rowPressed: {
     backgroundColor: colors.inputFill,

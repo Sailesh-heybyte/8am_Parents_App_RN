@@ -100,11 +100,11 @@ export function pointAtDistance(route, d) {
   const distance = Math.max(0, Math.min(total, d));
   if (path.length === 0) return { point: [0, 0], bearing: 0 };
   if (path.length === 1 || distance <= 0) {
-    return { point: path[0], bearing: path.length > 1 ? bearing(path[0], path[1]) : 0 };
+    return { point: path[0], bearing: path.length > 1 ? bearingAlong(path, 0) : 0 };
   }
   if (distance >= total) {
     const last = path.length - 1;
-    return { point: path[last], bearing: bearing(path[last - 1], path[last]) };
+    return { point: path[last], bearing: bearingAlong(path, last - 1) };
   }
   const index = segmentIndex(cum, distance);
   const span = cum[index + 1] - cum[index];
@@ -113,6 +113,19 @@ export function pointAtDistance(route, d) {
   const b = path[index + 1];
   return {
     point: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t],
-    bearing: bearing(a, b),
+    bearing: bearingAlong(path, index),
   };
+}
+
+const MIN_BEARING_M = 8;
+
+function bearingAlong(path, index) {
+  for (let i = index; i < path.length - 1 && i < index + 12; i += 1) {
+    if (distanceMeters(path[i], path[i + 1]) >= MIN_BEARING_M) return bearing(path[i], path[i + 1]);
+  }
+  for (let i = index - 1; i >= 0 && i > index - 12; i -= 1) {
+    if (distanceMeters(path[i], path[i + 1]) >= MIN_BEARING_M) return bearing(path[i], path[i + 1]);
+  }
+  const next = Math.min(index + 1, path.length - 1);
+  return next === index ? 0 : bearing(path[index], path[next]);
 }

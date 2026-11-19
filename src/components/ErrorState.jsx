@@ -9,7 +9,7 @@ export default function ErrorState({ title, message, onRetry, buttonColor = colo
   const { t } = useLanguage();
   return (
     <View style={styles.container}>
-      <MaterialIcons name="error-outline" size={48} color="#F44336" />
+      <MaterialIcons name="error-outline" size={48} color={colors.errorRedBright} />
       <View style={styles.copy}>
         {title ? (
           <AppText variant="heading2" color={colors.textPrimary} style={styles.title}>

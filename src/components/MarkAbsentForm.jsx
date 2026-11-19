@@ -59,7 +59,7 @@ export default function MarkAbsentForm({
   return (
     <View>
       <View style={styles.titleRow}>
-        <IconTile size={42} bg="#243B5A14">
+        <IconTile size={42} bg={colors.primaryNavySubtle}>
           <MaterialIcons name="event-busy" size={22} color={colors.primaryNavy} />
         </IconTile>
         <View style={styles.titleText}>
@@ -90,14 +90,14 @@ export default function MarkAbsentForm({
           </AppText>
         </Pressable>
         <Pressable onPress={openDatePicker} style={[styles.pickChip, isCustom && styles.pickChipSelected]}>
-          <MaterialIcons name="calendar-month" size={16} color={isCustom ? colors.primaryNavy : '#616161'} />
-          <AppText numberOfLines={1} color={isCustom ? colors.primaryNavy : '#424242'} style={styles.chipText}>
+          <MaterialIcons name="calendar-month" size={16} color={isCustom ? colors.primaryNavy : colors.grayIcon} />
+          <AppText numberOfLines={1} color={isCustom ? colors.primaryNavy : colors.grayLabel} style={styles.chipText}>
             {isCustom ? apiDate : 'Pick Date'}
           </AppText>
         </Pressable>
       </View>
       <View style={styles.dateInfo}>
-        <AppText color="#000000DE" style={styles.dateInfoText}>
+        <AppText color={colors.textEmphasis} style={styles.dateInfoText}>
           📅 {formatDate(apiDate)} ({apiDate})
         </AppText>
       </View>
@@ -118,7 +118,7 @@ export default function MarkAbsentForm({
               <AppText color={selected ? colors.primaryNavy : colors.textPrimary} style={styles.optionTitle}>
                 {option.titleKey ? t(option.titleKey) : option.title}
               </AppText>
-              <AppText color={selected ? '#243B5ACC' : colors.textSecondary} style={styles.optionSubtitle}>
+              <AppText color={selected ? colors.primaryNavyEmphasis : colors.textSecondary} style={styles.optionSubtitle}>
                 {option.subtitle}
               </AppText>
             </Pressable>
@@ -130,7 +130,7 @@ export default function MarkAbsentForm({
         <AppText variant="heading3" style={styles.reasonLabel}>
           {t('reasonOptional')}
         </AppText>
-        <AppText color="#9E9E9E" style={styles.counter}>
+        <AppText color={colors.grayCounter} style={styles.counter}>
           {reason.length}/500
         </AppText>
       </View>
@@ -141,7 +141,7 @@ export default function MarkAbsentForm({
         multiline
         textAlignVertical="top"
         placeholder="e.g. Doctor appointment, family function..."
-        placeholderTextColor="#BDBDBD"
+        placeholderTextColor={colors.grayPlaceholder}
         cursorColor={colors.primaryNavy}
         selectionColor={colors.primaryNavyLight}
         allowFontScaling={false}
@@ -216,16 +216,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.grayBorder,
     backgroundColor: colors.background,
   },
-  pickChipSelected: { borderColor: colors.primaryNavy, backgroundColor: '#243B5A1F' },
+  pickChipSelected: { borderColor: colors.primaryNavy, backgroundColor: colors.primaryNavySelected },
   dateInfo: {
     marginTop: 8,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: radius.md,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.grayChip,
   },
   dateInfoText: { fontFamily: fonts.medium, fontSize: 12.5 },
   optionRow: { flexDirection: 'row', gap: 8 },
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     borderColor: colors.cardBorder,
     backgroundColor: colors.background,
   },
-  optionSelected: { borderWidth: 1.5, borderColor: colors.primaryNavy, backgroundColor: '#243B5A14' },
+  optionSelected: { borderWidth: 1.5, borderColor: colors.primaryNavy, backgroundColor: colors.primaryNavySubtle },
   optionTitle: { fontFamily: fonts.semiBold, fontSize: 12.5, marginTop: 6, textAlign: 'center' },
   optionSubtitle: { fontSize: 10, marginTop: 2, textAlign: 'center' },
   reasonHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 8 },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#F59E0B4D',
+    borderColor: colors.busYellowBorder,
     backgroundColor: colors.busYellowLight,
   },
   noticeText: { flex: 1, fontFamily: fonts.medium, fontSize: 12 },

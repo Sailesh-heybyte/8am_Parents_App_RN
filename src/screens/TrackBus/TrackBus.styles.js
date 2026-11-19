@@ -52,6 +52,32 @@ export default StyleSheet.create({
     marginTop: 4,
     fontSize: 13,
   },
+  statusRow: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.liveGreen,
+  },
+  liveLabel: {
+    flexShrink: 1,
+    fontFamily: fonts.bold,
+    fontSize: 12,
+  },
+  statusText: {
+    flexShrink: 1,
+    fontSize: 12,
+  },
+  endedLabel: {
+    flexShrink: 1,
+    fontFamily: fonts.semiBold,
+    fontSize: 12,
+  },
   marker: {
     width: 40,
     height: 40,
@@ -62,5 +88,27 @@ export default StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primaryNavy,
     ...shadows.card,
+  },
+  puck: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ring: {
+    position: 'absolute',
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    left: 36,
+    top: 36,
+    borderWidth: 2,
+    borderColor: colors.busYellow,
+    backgroundColor: colors.busYellowGlow,
+  },
+  busIcon: {
+    width: 54,
+    height: 54,
   },
 });

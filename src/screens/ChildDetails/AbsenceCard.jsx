@@ -9,7 +9,7 @@ import { colors, radius } from '../../styles';
 
 export const DIRECTIONS = {
   AM_PICKUP: { labelKey: 'morningPickup', icon: 'wb-sunny', fg: colors.busYellowText, bg: colors.busYellowLight },
-  PM_DROP: { labelKey: 'eveningDrop', icon: 'nightlight-round', fg: '#512DA8', bg: '#EDE7F6' },
+  PM_DROP: { labelKey: 'eveningDrop', icon: 'nightlight-round', fg: colors.eveningPurple, bg: colors.eveningPurpleBg },
   BOTH: { label: 'Full Day (Pickup & Drop)', icon: 'all-inclusive', fg: colors.textPrimary, bg: colors.neutralBadgeBg },
 };
 

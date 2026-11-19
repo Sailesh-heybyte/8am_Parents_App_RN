@@ -5,19 +5,17 @@ import AppText from '../../components/AppText';
 import Card from '../../components/Card';
 import StatusBadge from '../../components/StatusBadge';
 import { useLanguage } from '../../context/LanguageContext';
-import { colors, fonts } from '../../styles';
-
-const AVATAR_COLORS = ['#243B5A', '#4A6B5D', '#8B5E3C'];
+import { avatarColors, colors, fonts } from '../../styles';
 
 export default function ChildCard({ child, index, onPress }) {
   const { t } = useLanguage();
-  const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
+  const avatar = avatarColors[index % avatarColors.length];
   const initial = child.name ? child.name[0].toUpperCase() : 'C';
 
   return (
     <Card onPress={onPress} style={styles.card}>
-      <View style={[styles.avatar, { backgroundColor: `${color}1F` }]}>
-        <AppText color={color} style={styles.initial}>
+      <View style={[styles.avatar, { backgroundColor: avatar.background }]}>
+        <AppText color={avatar.color} style={styles.initial}>
           {initial}
         </AppText>
       </View>

@@ -7,9 +7,9 @@ import { formatDateTime } from '../../utils/date';
 import { colors, fonts } from '../../styles';
 
 const PRIORITY = {
-  urgent: { label: 'Urgent', color: '#D32F2F', bg: '#FFEBEE' },
-  important: { label: 'Important', color: '#F57C00', bg: '#FFF3E0' },
-  normal: { label: 'Notice', color: colors.primaryNavy, bg: '#E8EAF6' },
+  urgent: { label: 'Urgent', color: colors.errorRed, bg: colors.errorRedBg },
+  important: { label: 'Important', color: colors.importantOrange, bg: colors.warningOrangeBg },
+  normal: { label: 'Notice', color: colors.primaryNavy, bg: colors.noticeBg },
 };
 
 export default function AnnouncementCard({ announcement }) {

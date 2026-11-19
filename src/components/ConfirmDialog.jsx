@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: 'rgba(0, 0, 0, 0.54)',
+    backgroundColor: colors.scrim,
   },
   dialog: {
     padding: 20,

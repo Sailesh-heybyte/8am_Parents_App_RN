@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Animated, Easing, Image, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Mapbox from '@rnmapbox/maps';
 import { HouseIcon } from 'phosphor-react-native';
@@ -10,38 +10,150 @@ import AppText from '../../components/AppText';
 import BackButton from '../../components/BackButton';
 import Card from '../../components/Card';
 import { useLanguage } from '../../context/LanguageContext';
+import useBusTracking from '../../hooks/useBusTracking';
 import { startBusSimulator } from '../../utils/busSimulator';
 import { getErrorMessage } from '../../utils/errors';
 import { buildRoute, snapToRoute } from '../../utils/routeMath';
 import { colors } from '../../styles';
-import LiveBusLayer from './LiveBusLayer';
+import LiveBusLayer, { followAnchor } from './LiveBusLayer';
 import styles from './TrackBus.styles';
 
 const HYDERABAD = [78.4867, 17.3850];
-
 const PASSED_LAG_M = 20;
+const PUCK = 160;
+const busImage = require('../../assets/images/bus.png');
+
+function buildFollowPadding(height, bottomInset) {
+  const safeHeight = height > 0 ? height : 720;
+  const bottom = Math.round(bottomInset + 128);
+  const top = Math.round(bottom + safeHeight * 0.18);
+  return {
+    paddingTop: top,
+    paddingRight: 40,
+    paddingBottom: bottom,
+    paddingLeft: 40,
+  };
+}
+
+function pulseStyle(value) {
+  return {
+    opacity: value.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0] }),
+    transform: [{ scale: value.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1.45] }) }],
+  };
+}
+
+function FollowPuck({ x, y }) {
+  const first = useRef(new Animated.Value(0)).current;
+  const second = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const pulse = (value, delay) => Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(value, {
+          toValue: 1,
+          duration: 1600,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(value, { toValue: 0, duration: 0, useNativeDriver: true }),
+      ]),
+    );
+    const leading = pulse(first, 0);
+    const trailing = pulse(second, 800);
+    leading.start();
+    trailing.start();
+    return () => {
+      leading.stop();
+      trailing.stop();
+    };
+  }, [first, second]);
+
+  return (
+    <View pointerEvents="none" style={[styles.puck, { left: x - PUCK / 2, top: y - PUCK / 2 }]}>
+      <Animated.View style={[styles.ring, pulseStyle(first)]} />
+      <Animated.View style={[styles.ring, pulseStyle(second)]} />
+      <Image source={busImage} style={styles.busIcon} />
+    </View>
+  );
+}
 
 const stopStyle = {
   circleRadius: ['case', ['==', ['get', 'kind'], 'child'], 9, 7],
   circleColor: [
     'case',
-    ['get', 'passed'], '#64748B',
-    ['==', ['get', 'kind'], 'start'], '#10B981',
-    ['==', ['get', 'kind'], 'destination'], '#E11D48',
+    ['get', 'passed'], colors.mapRoutePassed,
+    ['==', ['get', 'kind'], 'start'], colors.mapStopStart,
+    ['==', ['get', 'kind'], 'destination'], colors.mapStopDestination,
     ['==', ['get', 'kind'], 'child'], colors.primaryNavy,
-    '#FFFFFF',
+    colors.surfaceWhite,
   ],
   circleStrokeWidth: 2.5,
   circleStrokeColor: [
     'case',
     ['all', ['==', ['get', 'kind'], 'stop'], ['!', ['get', 'passed']]],
     colors.primaryNavy,
-    '#FFFFFF',
+    colors.surfaceWhite,
   ],
 };
 
 function isPlaced(point) {
   return point[0] !== 0 || point[1] !== 0;
+}
+
+function TrackingStatus({ status, errorKind, hasBus }) {
+  const { t } = useLanguage();
+  if (status === 'live') {
+    return (
+      <View style={styles.statusRow}>
+        <View style={styles.liveDot} />
+        <AppText variant="bodySmall" color={colors.liveGreen} style={styles.liveLabel}>
+          {t('live')}
+        </AppText>
+      </View>
+    );
+  }
+  if (status === 'connecting' || status === 'reconnecting') {
+    return (
+      <View style={styles.statusRow}>
+        <ActivityIndicator size="small" color={colors.primaryNavy} />
+        <AppText variant="bodySmall" color={colors.textSecondary} style={styles.statusText}>
+          {status === 'connecting' ? 'Connecting…' : 'Reconnecting…'}
+        </AppText>
+      </View>
+    );
+  }
+  if (status === 'ended') {
+    return (
+      <View style={styles.statusRow}>
+        <AppText variant="bodySmall" color={colors.textSecondary} style={styles.endedLabel}>
+          {t('trackingTripEndedTitle')}
+        </AppText>
+      </View>
+    );
+  }
+  if (status === 'error') {
+    let message = t('trackingServerTitle');
+    if (errorKind === 'noAccess') message = t('trackingNoAccessTitle');
+    else if (errorKind === 'session') message = 'Please sign in again';
+    return (
+      <View style={styles.statusRow}>
+        <AppText variant="bodySmall" color={colors.errorRed} style={styles.statusText}>
+          {message}
+        </AppText>
+      </View>
+    );
+  }
+  if (status === 'idle' && !hasBus) {
+    return (
+      <View style={styles.statusRow}>
+        <AppText variant="bodySmall" color={colors.textSecondary} style={styles.endedLabel}>
+          {t('trackingNoBusTitle')}
+        </AppText>
+      </View>
+    );
+  }
+  return null;
 }
 
 export default function TrackBus({ navigation, route: navRoute }) {
@@ -50,6 +162,7 @@ export default function TrackBus({ navigation, route: navRoute }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const padding = width < 380 ? 16 : 20;
+  const [mapBox, setMapBox] = useState({ width: 0, height: 0 });
   const hasHome = child.homeLatitude != null && child.homeLongitude != null;
   const home = useMemo(
     () => (hasHome ? [child.homeLongitude, child.homeLatitude] : null),
@@ -58,7 +171,7 @@ export default function TrackBus({ navigation, route: navRoute }) {
   const cameraRef = useRef(null);
   const fitted = useRef(false);
   const hasFixRef = useRef(false);
-  const zoomRef = useRef(15.5);
+  const zoomRef = useRef(16);
   const busPointRef = useRef(null);
   const demoStopRef = useRef(null);
   const [route, setRoute] = useState(null);
@@ -68,6 +181,7 @@ export default function TrackBus({ navigation, route: navRoute }) {
   const [demoFix, setDemoFix] = useState(null);
   const [demoRunning, setDemoRunning] = useState(false);
   const [busDistance, setBusDistance] = useState(0);
+  const { status, errorKind, fix: liveFix } = useBusTracking(child.busId, { enabled: !demoFix });
 
   useEffect(() => {
     let active = true;
@@ -95,7 +209,13 @@ export default function TrackBus({ navigation, route: navRoute }) {
   }, [child.id]);
 
   const routeModel = useMemo(() => (roadPath.length >= 2 ? buildRoute(roadPath) : null), [roadPath]);
-  const hasFix = demoFix != null;
+  const followPad = useMemo(
+    () => buildFollowPadding(mapBox.height, insets.bottom),
+    [mapBox.height, insets.bottom],
+  );
+  const anchor = useMemo(() => followAnchor(mapBox, followPad), [mapBox, followPad]);
+  const fix = demoFix ?? liveFix;
+  const hasFix = !!(demoFix ?? liveFix);
   hasFixRef.current = hasFix;
 
   useEffect(() => () => {
@@ -206,8 +326,17 @@ export default function TrackBus({ navigation, route: navRoute }) {
     })}`;
   }
 
+  function onScreenLayout(event) {
+    const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
+    setMapBox(current => (
+      current.width === layoutWidth && current.height === layoutHeight
+        ? current
+        : { width: layoutWidth, height: layoutHeight }
+    ));
+  }
+
   return (
-    <View style={styles.screen}>
+    <View style={styles.screen} onLayout={onScreenLayout}>
       <AppMapView
         style={StyleSheet.absoluteFill}
         scrollEnabled={!hasFix}
@@ -228,11 +357,12 @@ export default function TrackBus({ navigation, route: navRoute }) {
         {routeModel ? (
           <LiveBusLayer
             route={routeModel}
-            fix={demoFix}
+            fix={fix}
             gates={gates}
             cameraRef={cameraRef}
             zoomRef={zoomRef}
             busPointRef={busPointRef}
+            padding={followPad}
             onPassed={handlePassed}
           />
         ) : null}
@@ -253,6 +383,8 @@ export default function TrackBus({ navigation, route: navRoute }) {
           </Mapbox.MarkerView>
         ) : null}
       </AppMapView>
+
+      {hasFix && mapBox.width > 0 ? <FollowPuck x={anchor.x} y={anchor.y} /> : null}
 
       <View style={[styles.header, { top: insets.top + 12, left: padding, right: padding }]}>
         <BackButton onPress={() => navigation.goBack()} />
@@ -283,6 +415,7 @@ export default function TrackBus({ navigation, route: navRoute }) {
           <AppText variant="bodySecondary" color={subtitleColor} style={styles.subtitle}>
             {subtitle}
           </AppText>
+          <TrackingStatus status={status} errorKind={errorKind} hasBus={!!child.busId} />
         </Card>
       </View>
     </View>

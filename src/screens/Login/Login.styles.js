@@ -75,7 +75,7 @@ export default StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.cardBorderSubtle,
-    backgroundColor: 'rgba(242, 239, 233, 0.6)',
+    backgroundColor: colors.neutralBadgeBgSoft,
   },
   footerText: {
     flex: 1,

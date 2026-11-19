@@ -41,8 +41,8 @@ export default StyleSheet.create({
     height: 58,
     borderRadius: 29,
     borderWidth: 1.5,
-    borderColor: '#243B5A33',
-    backgroundColor: '#243B5A14',
+    borderColor: colors.primaryNavyBorder,
+    backgroundColor: colors.primaryNavySubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -72,7 +72,7 @@ export default StyleSheet.create({
   },
   busTile: {
     borderWidth: 1,
-    borderColor: '#F59E0B4D',
+    borderColor: colors.busYellowBorder,
   },
   trackingInfo: {
     flex: 1,

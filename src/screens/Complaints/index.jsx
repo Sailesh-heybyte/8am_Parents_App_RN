@@ -107,7 +107,7 @@ export default function ComplaintsScreen({ navigation, route }) {
               ListEmptyComponent={
                 <EmptyState
                   icon={<MaterialIcons name="feedback" size={40} color={colors.primaryNavy} />}
-                  iconBg="#243B5A14"
+                  iconBg={colors.primaryNavySubtle}
                   message={t('noComplaints')}
                   style={[styles.emptyState, { minHeight: height * 0.5 }]}
                 />

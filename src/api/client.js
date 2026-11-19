@@ -47,6 +47,15 @@ async function refreshAccessToken() {
   }
 }
 
+function startRefresh() {
+  if (!refreshPromise) {
+    refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
 async function endSession(error) {
   await clearTokens();
   onSessionExpired();
@@ -65,12 +74,7 @@ client.interceptors.response.use(
     }
     original._retry = true;
 
-    if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
-        refreshPromise = null;
-      });
-    }
-    const accessToken = await refreshPromise;
+    const accessToken = await startRefresh();
     if (!accessToken) {
       return endSession(error);
     }
@@ -79,5 +83,27 @@ client.interceptors.response.use(
     return client(original);
   },
 );
+
+export async function getAccessTokenForStream() {
+  const tokens = await getTokens();
+  return tokens?.accessToken || null;
+}
+
+export async function refreshSessionForStream() {
+  let accessToken = null;
+  try {
+    accessToken = await startRefresh();
+  } catch {
+    accessToken = null;
+  }
+  if (accessToken) return true;
+  try {
+    await clearTokens();
+  } catch {
+    // Storage is already unusable; the session still has to end.
+  }
+  onSessionExpired();
+  return false;
+}
 
 export default client;

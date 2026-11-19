@@ -32,7 +32,7 @@ export default StyleSheet.create({
     paddingBottom: 44,
   },
   pin: {
-    textShadowColor: 'rgba(0, 0, 0, 0.28)',
+    textShadowColor: colors.textShadow,
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },

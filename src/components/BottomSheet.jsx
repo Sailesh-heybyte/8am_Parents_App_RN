@@ -59,7 +59,7 @@ export default function BottomSheet({ visible, onClose, children }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.54)',
+    backgroundColor: colors.scrim,
   },
   backdrop: {
     flex: 1,

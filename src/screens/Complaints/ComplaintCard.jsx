@@ -9,9 +9,9 @@ import { formatDateTime } from '../../utils/date';
 import { colors, fonts } from '../../styles';
 
 const STATUS = {
-  resolved: { labelKey: 'statusResolved', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
-  in_progress: { label: 'In Progress', color: '#1565C0', bg: '#E3F2FD', icon: 'pending-actions' },
-  open: { label: 'Open', color: '#E65100', bg: '#FFF3E0', icon: 'hourglass-empty' },
+  resolved: { labelKey: 'statusResolved', color: colors.liveGreen, bg: colors.liveGreenBg, icon: 'check-circle' },
+  in_progress: { label: 'In Progress', color: colors.infoBlueDark, bg: colors.infoBlueBg, icon: 'pending-actions' },
+  open: { label: 'Open', color: colors.warningOrange, bg: colors.warningOrangeBg, icon: 'hourglass-empty' },
 };
 
 export default function ComplaintCard({ complaint, childName }) {
@@ -21,7 +21,7 @@ export default function ComplaintCard({ complaint, childName }) {
   return (
     <Card style={styles.card}>
       <View style={styles.headerRow}>
-        <IconTile size={44} bg="#243B5A14">
+        <IconTile size={44} bg={colors.primaryNavySubtle}>
           <MaterialIcons name="feedback" size={22} color={colors.primaryNavy} />
         </IconTile>
         <View style={styles.headerText}>
@@ -53,7 +53,7 @@ export default function ComplaintCard({ complaint, childName }) {
       {complaint.resolutionNote ? (
         <View style={styles.resolution}>
           <View style={styles.resolutionHeader}>
-            <MaterialIcons name="check-circle-outline" size={15} color="#2E7D32" />
+            <MaterialIcons name="check-circle-outline" size={15} color={colors.liveGreen} />
             <AppText variant="heading3" style={styles.resolutionTitle}>
               Resolution Note
             </AppText>
@@ -64,8 +64,8 @@ export default function ComplaintCard({ complaint, childName }) {
 
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          <MaterialIcons name="calendar-today" size={12} color="#68646199" />
-          <AppText variant="bodySmall" color="#686461B3" style={styles.dateText}>
+          <MaterialIcons name="calendar-today" size={12} color={colors.textSecondaryFaint} />
+          <AppText variant="bodySmall" color={colors.textSecondarySoft} style={styles.dateText}>
             {formatDateTime(complaint.createdAt)}
           </AppText>
         </View>
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#00000014',
+    borderColor: colors.borderFaint,
   },
   categoryLabel: {
     fontFamily: fonts.bold,
@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 12,
     borderRadius: 10,
-    backgroundColor: '#F1F8E9',
+    backgroundColor: colors.liveGreenPale,
     borderWidth: 1,
-    borderColor: '#C8E6C9',
+    borderColor: colors.liveGreenBorder,
   },
   resolutionHeader: {
     flexDirection: 'row',
@@ -149,13 +149,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   resolutionTitle: {
-    color: '#2E7D32',
+    color: colors.liveGreen,
     fontFamily: fonts.bold,
     fontSize: 12,
   },
   resolutionNote: {
     marginTop: 4,
-    color: '#1B5E20',
+    color: colors.liveGreenText,
     fontSize: 12.5,
     lineHeight: 17.5,
   },
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 10,
-    backgroundColor: '#243B5A14',
+    backgroundColor: colors.primaryNavySubtle,
   },
   childName: {
     fontFamily: fonts.semiBold,
