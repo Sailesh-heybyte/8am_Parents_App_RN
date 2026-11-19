@@ -89,26 +89,4 @@ export default StyleSheet.create({
     borderColor: colors.primaryNavy,
     ...shadows.card,
   },
-  puck: {
-    position: 'absolute',
-    width: 160,
-    height: 160,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ring: {
-    position: 'absolute',
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    left: 36,
-    top: 36,
-    borderWidth: 2,
-    borderColor: colors.busYellow,
-    backgroundColor: colors.busYellowGlow,
-  },
-  busIcon: {
-    width: 54,
-    height: 54,
-  },
 });

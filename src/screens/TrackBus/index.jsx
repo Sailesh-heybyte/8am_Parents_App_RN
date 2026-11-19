@@ -1,159 +1,42 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Easing, Image, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, AppState, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Mapbox from '@rnmapbox/maps';
 import { HouseIcon } from 'phosphor-react-native';
 import { getChildRoute } from '../../api/children';
 import { getRoadPath } from '../../api/directions';
+import { connectBusTracking } from '../../api/tracking';
 import AppMapView from '../../components/AppMapView';
 import AppText from '../../components/AppText';
 import BackButton from '../../components/BackButton';
 import Card from '../../components/Card';
 import { useLanguage } from '../../context/LanguageContext';
-import useBusTracking from '../../hooks/useBusTracking';
 import { startBusSimulator } from '../../utils/busSimulator';
 import { getErrorMessage } from '../../utils/errors';
-import { buildRoute, snapToRoute } from '../../utils/routeMath';
 import { colors } from '../../styles';
-import LiveBusLayer, { followAnchor } from './LiveBusLayer';
+import LiveBus from './LiveBus';
 import styles from './TrackBus.styles';
 
-const HYDERABAD = [78.4867, 17.3850];
-const PASSED_LAG_M = 20;
-const PUCK = 160;
-const busImage = require('../../assets/images/bus.png');
+const HYDERABAD = [78.4867, 17.385];
 
-function buildFollowPadding(height, bottomInset) {
-  const safeHeight = height > 0 ? height : 720;
-  const bottom = Math.round(bottomInset + 128);
-  const top = Math.round(bottom + safeHeight * 0.18);
-  return {
-    paddingTop: top,
-    paddingRight: 40,
-    paddingBottom: bottom,
-    paddingLeft: 40,
-  };
+// [0, 0] means the school hasn't placed that point yet.
+const isPlaced = point => point[0] !== 0 || point[1] !== 0;
+
+function stopFeature(kind, point, passed) {
+  return { type: 'Feature', properties: { kind, passed }, geometry: { type: 'Point', coordinates: point } };
 }
 
-function pulseStyle(value) {
-  return {
-    opacity: value.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0] }),
-    transform: [{ scale: value.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1.45] }) }],
-  };
-}
-
-function FollowPuck({ x, y }) {
-  const first = useRef(new Animated.Value(0)).current;
-  const second = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const pulse = (value, delay) => Animated.loop(
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.timing(value, {
-          toValue: 1,
-          duration: 1600,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(value, { toValue: 0, duration: 0, useNativeDriver: true }),
-      ]),
-    );
-    const leading = pulse(first, 0);
-    const trailing = pulse(second, 800);
-    leading.start();
-    trailing.start();
-    return () => {
-      leading.stop();
-      trailing.stop();
-    };
-  }, [first, second]);
-
-  return (
-    <View pointerEvents="none" style={[styles.puck, { left: x - PUCK / 2, top: y - PUCK / 2 }]}>
-      <Animated.View style={[styles.ring, pulseStyle(first)]} />
-      <Animated.View style={[styles.ring, pulseStyle(second)]} />
-      <Image source={busImage} style={styles.busIcon} />
-    </View>
+// Camera box around all points (zoomed out to show the whole route).
+function fitToPoints(camera, points, insets) {
+  if (!camera || points.length === 0) return;
+  const lngs = points.map(p => p[0]);
+  const lats = points.map(p => p[1]);
+  camera.fitBounds(
+    [Math.max(...lngs), Math.max(...lats)],
+    [Math.min(...lngs), Math.min(...lats)],
+    [insets.top + 90, 40, 200 + insets.bottom, 40],
+    800,
   );
-}
-
-const stopStyle = {
-  circleRadius: ['case', ['==', ['get', 'kind'], 'child'], 9, 7],
-  circleColor: [
-    'case',
-    ['get', 'passed'], colors.mapRoutePassed,
-    ['==', ['get', 'kind'], 'start'], colors.mapStopStart,
-    ['==', ['get', 'kind'], 'destination'], colors.mapStopDestination,
-    ['==', ['get', 'kind'], 'child'], colors.primaryNavy,
-    colors.surfaceWhite,
-  ],
-  circleStrokeWidth: 2.5,
-  circleStrokeColor: [
-    'case',
-    ['all', ['==', ['get', 'kind'], 'stop'], ['!', ['get', 'passed']]],
-    colors.primaryNavy,
-    colors.surfaceWhite,
-  ],
-};
-
-function isPlaced(point) {
-  return point[0] !== 0 || point[1] !== 0;
-}
-
-function TrackingStatus({ status, errorKind, hasBus }) {
-  const { t } = useLanguage();
-  if (status === 'live') {
-    return (
-      <View style={styles.statusRow}>
-        <View style={styles.liveDot} />
-        <AppText variant="bodySmall" color={colors.liveGreen} style={styles.liveLabel}>
-          {t('live')}
-        </AppText>
-      </View>
-    );
-  }
-  if (status === 'connecting' || status === 'reconnecting') {
-    return (
-      <View style={styles.statusRow}>
-        <ActivityIndicator size="small" color={colors.primaryNavy} />
-        <AppText variant="bodySmall" color={colors.textSecondary} style={styles.statusText}>
-          {status === 'connecting' ? 'Connecting…' : 'Reconnecting…'}
-        </AppText>
-      </View>
-    );
-  }
-  if (status === 'ended') {
-    return (
-      <View style={styles.statusRow}>
-        <AppText variant="bodySmall" color={colors.textSecondary} style={styles.endedLabel}>
-          {t('trackingTripEndedTitle')}
-        </AppText>
-      </View>
-    );
-  }
-  if (status === 'error') {
-    let message = t('trackingServerTitle');
-    if (errorKind === 'noAccess') message = t('trackingNoAccessTitle');
-    else if (errorKind === 'session') message = 'Please sign in again';
-    return (
-      <View style={styles.statusRow}>
-        <AppText variant="bodySmall" color={colors.errorRed} style={styles.statusText}>
-          {message}
-        </AppText>
-      </View>
-    );
-  }
-  if (status === 'idle' && !hasBus) {
-    return (
-      <View style={styles.statusRow}>
-        <AppText variant="bodySmall" color={colors.textSecondary} style={styles.endedLabel}>
-          {t('trackingNoBusTitle')}
-        </AppText>
-      </View>
-    );
-  }
-  return null;
 }
 
 export default function TrackBus({ navigation, route: navRoute }) {
@@ -162,219 +45,115 @@ export default function TrackBus({ navigation, route: navRoute }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const padding = width < 380 ? 16 : 20;
-  const [mapBox, setMapBox] = useState({ width: 0, height: 0 });
-  const hasHome = child.homeLatitude != null && child.homeLongitude != null;
-  const home = useMemo(
-    () => (hasHome ? [child.homeLongitude, child.homeLatitude] : null),
-    [hasHome, child.homeLongitude, child.homeLatitude],
-  );
   const cameraRef = useRef(null);
-  const fitted = useRef(false);
-  const hasFixRef = useRef(false);
-  const zoomRef = useRef(16);
-  const busPointRef = useRef(null);
-  const demoStopRef = useRef(null);
+  const stopDemoRef = useRef(null);
+
+  const home = child.homeLatitude != null ? [child.homeLongitude, child.homeLatitude] : null;
+  const initial = (child.name || '').trim().charAt(0).toUpperCase();
+
   const [route, setRoute] = useState(null);
   const [roadPath, setRoadPath] = useState([]);
   const [routeError, setRouteError] = useState('');
-  const [pathReady, setPathReady] = useState(false);
+  const [liveFix, setLiveFix] = useState(null);
   const [demoFix, setDemoFix] = useState(null);
-  const [demoRunning, setDemoRunning] = useState(false);
-  const [busDistance, setBusDistance] = useState(0);
-  const { status, errorKind, fix: liveFix } = useBusTracking(child.busId, { enabled: !demoFix });
+  const [status, setStatus] = useState(child.busId ? 'connecting' : 'noBus');
+  const [passedStops, setPassedStops] = useState(0);
+  const [appActive, setAppActive] = useState(AppState.currentState === 'active');
 
+  const fix = demoFix ?? liveFix; // one GPS reading: { point, timestamp }
+  const demoOn = demoFix != null;
+
+  // 1) Load the route, then the road line that follows its stops.
   useEffect(() => {
     let active = true;
-    getChildRoute(child.id)
-      .then(async loaded => {
+    async function load() {
+      try {
+        const loaded = await getChildRoute(child.id);
         if (!active) return;
         setRoute(loaded);
-        const waypoints = [
-          loaded.start,
-          ...loaded.stops.map(stop => [stop.longitude, stop.latitude]),
-          loaded.end,
-        ].filter(isPlaced);
+        const waypoints = [loaded.start, ...loaded.stops.map(s => [s.longitude, s.latitude]), loaded.end].filter(isPlaced);
         const path = await getRoadPath(waypoints);
         if (!active) return;
         setRoadPath(path);
-        setPathReady(true);
-      })
-      .catch(error => {
-        if (!active) return;
-        setRouteError(getErrorMessage(error));
-      });
+        const box = path.length ? path : waypoints;
+        fitToPoints(cameraRef.current, home ? [...box, home] : box, insets);
+      } catch (e) {
+        if (active) setRouteError(getErrorMessage(e));
+      }
+    }
+    load();
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [child.id]);
 
-  const routeModel = useMemo(() => (roadPath.length >= 2 ? buildRoute(roadPath) : null), [roadPath]);
-  const followPad = useMemo(
-    () => buildFollowPadding(mapBox.height, insets.bottom),
-    [mapBox.height, insets.bottom],
-  );
-  const anchor = useMemo(() => followAnchor(mapBox, followPad), [mapBox, followPad]);
-  const fix = demoFix ?? liveFix;
-  const hasFix = !!(demoFix ?? liveFix);
-  hasFixRef.current = hasFix;
-
-  useEffect(() => () => {
-    demoStopRef.current?.();
+  // 2) Live bus stream: only while the app is open and the demo is off.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', state => setAppActive(state === 'active'));
+    return () => sub.remove();
   }, []);
-
-  const handlePassed = useCallback(distance => {
-    setBusDistance(distance);
-  }, []);
-
-  function handleCameraChanged(state) {
-    if (!hasFixRef.current || !state?.gestures?.isGestureActive) return;
-    const zoom = state.properties?.zoom;
-    if (typeof zoom !== 'number') return;
-    zoomRef.current = Math.min(18, Math.max(11, zoom));
-  }
-
-  function toggleDemo() {
-    if (!__DEV__) return;
-    if (demoStopRef.current) {
-      demoStopRef.current();
-      demoStopRef.current = null;
-      setDemoRunning(false);
-      return;
-    }
-    demoStopRef.current = startBusSimulator(roadPath, setDemoFix);
-    setDemoRunning(true);
-  }
 
   useEffect(() => {
-    if (hasFixRef.current) {
-      fitted.current = true;
+    if (!child.busId || demoOn || !appActive) return undefined;
+    return connectBusTracking(child.busId, { onLocation: setLiveFix, onStatus: setStatus });
+  }, [child.busId, demoOn, appActive]);
+
+  // 3) Dev-only demo bus that drives along the real route.
+  function toggleDemo() {
+    if (stopDemoRef.current) {
+      stopDemoRef.current();
+      stopDemoRef.current = null;
+      setDemoFix(null);
       return;
     }
-    if (!pathReady || !route || fitted.current || !cameraRef.current) return;
-    const points = roadPath.length >= 2
-      ? [...roadPath]
-      : [route.start, route.end, ...route.stops.map(stop => [stop.longitude, stop.latitude])].filter(isPlaced);
-    if (home) points.push(home);
-    if (points.length === 0) return;
-
-    let minLng = points[0][0];
-    let maxLng = points[0][0];
-    let minLat = points[0][1];
-    let maxLat = points[0][1];
-    points.forEach(([lng, lat]) => {
-      minLng = Math.min(minLng, lng);
-      maxLng = Math.max(maxLng, lng);
-      minLat = Math.min(minLat, lat);
-      maxLat = Math.max(maxLat, lat);
-    });
-    fitted.current = true;
-    cameraRef.current.fitBounds(
-      [maxLng, maxLat],
-      [minLng, minLat],
-      [insets.top + 90, 40, 200 + insets.bottom, 40],
-      800,
-    );
-  }, [pathReady, route, roadPath, home, insets.top, insets.bottom]);
-
-  const markers = useMemo(() => {
-    if (!route) return [];
-    const items = [];
-    if (isPlaced(route.start)) items.push({ kind: 'start', point: route.start });
-    route.stops.forEach(stop => {
-      const point = [stop.longitude, stop.latitude];
-      if (!isPlaced(point)) return;
-      items.push({ kind: stop.id === child.stopId ? 'child' : 'stop', point });
-    });
-    if (isPlaced(route.end)) items.push({ kind: 'destination', point: route.end });
-    if (!routeModel) return items.map(item => ({ ...item, distance: Infinity }));
-    return items.map(item => ({
-      ...item,
-      distance: snapToRoute(routeModel, item.point).distance,
-    }));
-  }, [route, routeModel, child.stopId]);
-
-  const gates = useMemo(
-    () => markers.filter(marker => Number.isFinite(marker.distance)).map(marker => marker.distance),
-    [markers],
-  );
-
-  const passedKey = hasFix
-    ? markers.map(marker => (marker.distance < busDistance - PASSED_LAG_M ? '1' : '0')).join('')
-    : '';
-
-  const stopsShape = useMemo(() => ({
-    type: 'FeatureCollection',
-    features: markers.map((marker, index) => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: marker.point },
-      properties: { kind: marker.kind, passed: passedKey[index] === '1' },
-    })),
-  }), [markers, passedKey]);
-
-  const stopIndex = route && child.stopId ? route.stops.findIndex(stop => stop.id === child.stopId) : -1;
-  const childStop = stopIndex >= 0 ? route.stops[stopIndex] : null;
-
-  let subtitle = hasHome ? t('homeLocationSetLabel') : t('homeLocationNotSet');
-  let subtitleColor = colors.textSecondary;
-  if (routeError) {
-    subtitle = routeError;
-    subtitleColor = colors.errorRed;
-  } else if (childStop) {
-    subtitle = `${childStop.name} · ${t('stopXOfY', {
-      stopSequence: stopIndex + 1,
-      totalStops: route.stops.length,
-    })}`;
+    stopDemoRef.current = startBusSimulator(roadPath, setDemoFix);
   }
+  useEffect(() => () => stopDemoRef.current?.(), []);
 
-  function onScreenLayout(event) {
-    const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
-    setMapBox(current => (
-      current.width === layoutWidth && current.height === layoutHeight
-        ? current
-        : { width: layoutWidth, height: layoutHeight }
-    ));
+  // Stops for the map: start, each stop (grey once passed), school.
+  const stopsShape = useMemo(() => {
+    if (!route) return null;
+    const features = [];
+    if (isPlaced(route.start)) features.push(stopFeature('start', route.start, false));
+    route.stops.forEach((stop, index) => {
+      const point = [stop.longitude, stop.latitude];
+      if (isPlaced(point)) features.push(stopFeature(stop.id === child.stopId ? 'child' : 'stop', point, index < passedStops));
+    });
+    if (isPlaced(route.end)) features.push(stopFeature('destination', route.end, false));
+    return features.length ? { type: 'FeatureCollection', features } : null;
+  }, [route, child.stopId, passedStops]);
+
+  // Card subtitle: "Pantaloons · Stop #5 of 5"
+  const stopIndex = route ? route.stops.findIndex(stop => stop.id === child.stopId) : -1;
+  let subtitle = home ? t('homeLocationSetLabel') : t('homeLocationNotSet');
+  if (stopIndex >= 0) {
+    subtitle = `${route.stops[stopIndex].name} · ${t('stopXOfY', { stopSequence: stopIndex + 1, totalStops: route.stops.length })}`;
   }
 
   return (
-    <View style={styles.screen} onLayout={onScreenLayout}>
+    <View style={styles.screen}>
       <AppMapView
         style={StyleSheet.absoluteFill}
-        scrollEnabled={!hasFix}
+        scrollEnabled={!fix}
         rotateEnabled={false}
         pitchEnabled={false}
-        onCameraChanged={handleCameraChanged}
       >
-        <Mapbox.Camera
-          ref={cameraRef}
-          minZoomLevel={hasFix ? 11 : 0}
-          maxZoomLevel={hasFix ? 18 : 22}
-          defaultSettings={{
-            centerCoordinate: home || HYDERABAD,
-            zoomLevel: home ? 15 : 10,
-            animationDuration: 0,
-          }}
-        />
-        {routeModel ? (
-          <LiveBusLayer
-            route={routeModel}
+        <Mapbox.Camera ref={cameraRef} defaultSettings={{ centerCoordinate: home || HYDERABAD, zoomLevel: 14.5 }} />
+
+        {roadPath.length >= 2 && route ? (
+          <LiveBus
+            key={demoOn ? 'demo' : 'live'}
+            roadPath={roadPath}
+            stops={route.stops}
+            stopsShape={stopsShape}
             fix={fix}
-            gates={gates}
             cameraRef={cameraRef}
-            zoomRef={zoomRef}
-            busPointRef={busPointRef}
-            padding={followPad}
-            onPassed={handlePassed}
+            initial={initial}
+            onPassedStops={setPassedStops}
           />
         ) : null}
-        {markers.length > 0 ? (
-          <Mapbox.ShapeSource id="stops" shape={stopsShape}>
-            <Mapbox.CircleLayer
-              id="stopDots"
-              aboveLayerID={routeModel ? 'routeAhead' : undefined}
-              style={stopStyle}
-            />
-          </Mapbox.ShapeSource>
-        ) : null}
+
         {home ? (
           <Mapbox.MarkerView coordinate={home} allowOverlap>
             <View style={styles.marker}>
@@ -383,8 +162,6 @@ export default function TrackBus({ navigation, route: navRoute }) {
           </Mapbox.MarkerView>
         ) : null}
       </AppMapView>
-
-      {hasFix && mapBox.width > 0 ? <FollowPuck x={anchor.x} y={anchor.y} /> : null}
 
       <View style={[styles.header, { top: insets.top + 12, left: padding, right: padding }]}>
         <BackButton onPress={() => navigation.goBack()} />
@@ -395,14 +172,10 @@ export default function TrackBus({ navigation, route: navRoute }) {
         </View>
       </View>
 
-      {__DEV__ && routeModel ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={toggleDemo}
-          style={[styles.demo, { top: insets.top + 62, right: padding }]}
-        >
+      {__DEV__ && roadPath.length >= 2 ? (
+        <Pressable onPress={toggleDemo} accessibilityRole="button" style={[styles.demo, { top: insets.top + 62, right: padding }]}>
           <AppText color={colors.primaryNavy} style={styles.demoText}>
-            {demoRunning ? 'Stop demo' : 'Demo bus'}
+            {demoOn ? 'Stop demo' : 'Demo bus'}
           </AppText>
         </Pressable>
       ) : null}
@@ -412,12 +185,49 @@ export default function TrackBus({ navigation, route: navRoute }) {
           <AppText color={colors.textPrimary} style={styles.title}>
             {route?.routeName || t('liveBusTracking')}
           </AppText>
-          <AppText variant="bodySecondary" color={subtitleColor} style={styles.subtitle}>
-            {subtitle}
+          <AppText variant="bodySecondary" color={routeError ? colors.errorRed : colors.textSecondary} style={styles.subtitle}>
+            {routeError || subtitle}
           </AppText>
-          <TrackingStatus status={status} errorKind={errorKind} hasBus={!!child.busId} />
+          <StatusLine status={demoOn ? 'live' : status} />
         </Card>
       </View>
+    </View>
+  );
+}
+
+// "● LIVE", "Connecting…", "Trip ended", …
+function StatusLine({ status }) {
+  const { t } = useLanguage();
+  if (status === 'live') {
+    return (
+      <View style={styles.statusRow}>
+        <View style={styles.liveDot} />
+        <AppText color={colors.liveGreen} style={styles.liveLabel}>{t('live')}</AppText>
+      </View>
+    );
+  }
+  if (status === 'connecting' || status === 'reconnecting') {
+    return (
+      <View style={styles.statusRow}>
+        <ActivityIndicator size="small" color={colors.primaryNavy} />
+        <AppText color={colors.textSecondary} style={styles.statusText}>
+          {status === 'connecting' ? t('trackingConnecting') : t('trackingReconnecting')}
+        </AppText>
+      </View>
+    );
+  }
+  const messages = {
+    ended: t('trackingTripEndedTitle'),
+    noBus: t('trackingNoBusTitle'),
+    noAccess: t('trackingNoAccessTitle'),
+    signedOut: t('trackingSignInAgain'),
+  };
+  const isError = status === 'noAccess' || status === 'signedOut';
+  return (
+    <View style={styles.statusRow}>
+      <AppText color={isError ? colors.errorRed : colors.textSecondary} style={styles.statusText}>
+        {messages[status] || ''}
+      </AppText>
     </View>
   );
 }
