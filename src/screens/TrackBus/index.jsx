@@ -13,6 +13,7 @@ import Card from '../../components/Card';
 import { useLanguage } from '../../context/LanguageContext';
 import { startBusSimulator } from '../../utils/busSimulator';
 import { getErrorMessage } from '../../utils/errors';
+import { SHOW_DEMO_TOOLS } from '../../config';
 import { colors } from '../../styles';
 import LiveBus from './LiveBus';
 import styles from './TrackBus.styles';
@@ -43,15 +44,15 @@ export default function TrackBus({ navigation, route: navRoute }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const padding = width < 380 ? 16 : 20;
+  const home = child.homeLatitude != null ? [child.homeLongitude, child.homeLatitude] : null;
+  const initial = (child.name || '').trim().charAt(0).toUpperCase();
+
   const cameraRef = useRef(null);
   const stopDemoRef = useRef(null);
   const homeRef = useRef(home);
   const insetsRef = useRef(insets);
   homeRef.current = home;
   insetsRef.current = insets;
-
-  const home = child.homeLatitude != null ? [child.homeLongitude, child.homeLatitude] : null;
-  const initial = (child.name || '').trim().charAt(0).toUpperCase();
 
   const [route, setRoute] = useState(null);
   const [roadPath, setRoadPath] = useState([]);
@@ -169,7 +170,7 @@ export default function TrackBus({ navigation, route: navRoute }) {
         </View>
       </View>
 
-      {__DEV__ && roadPath.length >= 2 ? (
+      {SHOW_DEMO_TOOLS && roadPath.length >= 2 ? (
         <Pressable onPress={toggleDemo} accessibilityRole="button" style={[styles.demo, { top: insets.top + 62, right: padding }]}>
           <AppText color={colors.primaryNavy} style={styles.demoText}>
             {demoOn ? 'Stop demo' : 'Demo bus'}
