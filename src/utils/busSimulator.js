@@ -10,11 +10,14 @@ function withNoise(point, metres) {
   return [lng, lat];
 }
 
-export function startBusSimulator(path, onFix, { intervalMs = 2500, stepMeters } = {}) {
+// Like a real bus: one fix every 5 s (same as the backend), 40 m each time ≈ 29 km/h.
+const FIX_EVERY_MS = 5000;
+const METRES_PER_FIX = 40;
+
+export function startBusSimulator(path, onFix, { intervalMs = FIX_EVERY_MS, stepMeters = METRES_PER_FIX } = {}) {
   const route = buildRoute(path);
   const total = route.total || 0;
-  const hops = Math.max(12, Math.round(70000 / intervalMs));
-  const step = stepMeters ?? Math.max(40, total / hops);
+  const step = stepMeters;
   const returnsHome = path.length >= 2 && distanceMeters(path[0], path[path.length - 1]) < 80;
   let distance = 0;
   let towardEnd = true;

@@ -1,4 +1,4 @@
-import notifee, { AndroidImportance } from '@notifee/react-native';
+import notifee, { AndroidImportance, TriggerType } from '@notifee/react-native';
 
 // Channel ids match the Flutter app and the backend.
 const CHANNELS = [
@@ -49,18 +49,35 @@ export async function askNotificationPermission() {
   return settings.authorizationStatus >= 1;
 }
 
-// Firebase pushes will use this same function later (foreground display).
-export async function showNotification({ channelId = 'default_8am', title, body, data = {} }) {
-  await notifee.displayNotification({
+const LOGO = require('../assets/images/logo.png');
+
+// Same look as the Flutter app: white 8AM icon in the status bar, logo on the right.
+function buildNotification({ id, channelId = 'default_8am', title, body, data = {} }) {
+  return {
+    id,
     title,
     body,
     data,
     android: {
       channelId,
-      smallIcon: 'ic_launcher',
-      color: '#243B5A',
+      smallIcon: 'ic_notification',
+      largeIcon: LOGO,
+      color: '#1565C0',
       pressAction: { id: 'default' },
       importance: AndroidImportance.HIGH,
     },
+  };
+}
+
+// Firebase pushes will use this same function later (foreground display).
+export async function showNotification(notification) {
+  await notifee.displayNotification(buildNotification(notification));
+}
+
+// Shown by Android at the given time, even if the app is closed or the phone is locked.
+export async function scheduleNotification(notification, atMs) {
+  await notifee.createTriggerNotification(buildNotification(notification), {
+    type: TriggerType.TIMESTAMP,
+    timestamp: atMs,
   });
 }
