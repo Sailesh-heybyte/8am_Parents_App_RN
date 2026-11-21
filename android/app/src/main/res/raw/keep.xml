@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@raw/trip_started_8am,@raw/bus_approaching_8am,@raw/rfid_tap_8am" />

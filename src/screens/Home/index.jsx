@@ -11,11 +11,13 @@ import { getChildren } from '../../api/children';
 import { getParentName, saveParentName } from '../../utils/storage';
 import { getErrorMessage } from '../../utils/errors';
 import { colors } from '../../styles';
+import { SHOW_DEMO_TOOLS } from '../../config';
 import ChildCard from './ChildCard';
 import ChildPickerSheet from '../../components/ChildPickerSheet';
 import HomeHeader from './HomeHeader';
 import HomeTopBar from './HomeTopBar';
 import ActionCard from './ActionCard';
+import DemoNotificationsSheet from './DemoNotificationsSheet';
 import styles from './Home.styles';
 
 function Separator() {
@@ -34,6 +36,7 @@ export default function HomeScreen({ navigation }) {
   const [error, setError] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [absentChild, setAbsentChild] = useState(null);
+  const [demoOpen, setDemoOpen] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
   function handleMarkAbsentPress() {
@@ -162,6 +165,7 @@ export default function HomeScreen({ navigation }) {
       <HomeTopBar
         scrollY={scrollY}
         onBellPress={() => navigation.navigate('Announcements')}
+        onBellLongPress={SHOW_DEMO_TOOLS ? () => setDemoOpen(true) : undefined}
         onLogout={signOut}
         horizontalPadding={padding.paddingHorizontal}
       />
@@ -176,6 +180,13 @@ export default function HomeScreen({ navigation }) {
         visible={absentChild !== null}
         onClose={() => setAbsentChild(null)}
       />
+      {SHOW_DEMO_TOOLS && (
+        <DemoNotificationsSheet
+          visible={demoOpen}
+          childName={children[0]?.name || 'Your child'}
+          onClose={() => setDemoOpen(false)}
+        />
+      )}
     </View>
   );
 }

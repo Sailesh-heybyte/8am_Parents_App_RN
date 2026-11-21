@@ -7,7 +7,7 @@ import LanguageSelector from '../../components/LanguageSelector';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../styles';
 
-export default function HomeTopBar({ scrollY, onBellPress, onLogout, horizontalPadding }) {
+export default function HomeTopBar({ scrollY, onBellPress, onBellLongPress, onLogout, horizontalPadding }) {
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const backgroundOpacity = scrollY.interpolate({
@@ -22,7 +22,11 @@ export default function HomeTopBar({ scrollY, onBellPress, onLogout, horizontalP
       <View pointerEvents="box-none" style={[styles.row, { paddingHorizontal: horizontalPadding }]}>
         <LanguageSelector />
         <View style={styles.actions}>
-          <IconButton onPress={onBellPress} accessibilityLabel={t('announcements')}>
+          <IconButton
+            onPress={onBellPress}
+            onLongPress={onBellLongPress}
+            accessibilityLabel={t('announcements')}
+          >
             <MaterialIcons name="notifications-none" size={20} color={colors.textPrimary} />
           </IconButton>
           <IconButton onPress={onLogout} accessibilityLabel={t('logout')}>
