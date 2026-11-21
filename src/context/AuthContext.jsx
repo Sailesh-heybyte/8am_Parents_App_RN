@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { clearTokens, getTokens, saveTokens } from '../utils/tokenStorage';
-import { clearParentName } from '../utils/storage';
+import { unregisterDevice } from '../api/devices';
 import { setOnSessionExpired } from '../api/client';
+import { getDeviceId } from '../utils/deviceId';
+import { clearParentName } from '../utils/storage';
+import { clearTokens, getTokens, saveTokens } from '../utils/tokenStorage';
 
 const AuthContext = createContext(null);
 
@@ -26,6 +28,8 @@ export function AuthProvider({ children }) {
   }
 
   async function signOut() {
+    // The device call needs the access token, so it must run before clearTokens.
+    try { await unregisterDevice(await getDeviceId()); } catch {}
     await clearTokens();
     await clearParentName();
     setIsLoggedIn(false);
